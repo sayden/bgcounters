@@ -1,0 +1,195 @@
+package counters
+
+import (
+	"image/color"
+
+	"github.com/danielgtaylor/unistyle"
+	"github.com/disintegration/imaging"
+	"github.com/fogleman/gg"
+	"github.com/pkg/errors"
+)
+
+type Text struct {
+	Settings
+	Positioner
+
+	String string `json:"string"`
+
+	Underline bool `json:"underline,omitempty"`
+	// TODO never used
+	Multiline bool `json:"multiline,omitempty"`
+}
+
+func (t *Text) SetWidth(w int) {
+	t.Width = w
+}
+
+func (t *Text) SetHeight(h int) {
+	t.Height = h
+}
+
+func (t *Text) GetPosition() int {
+	return t.Position
+}
+
+func (t *Text) GetSettings() Settings {
+	return t.Settings
+}
+
+func (t *Text) GetAlignment() gg.Align {
+	switch t.Alignment {
+	case ALIGMENT_CENTER:
+		return gg.AlignCenter
+	case ALIGMENT_RIGHT:
+		return gg.AlignRight
+	default:
+		return gg.AlignLeft
+	}
+}
+
+func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
+	dc.Push()
+	defer dc.Pop()
+
+	// Font and font color
+	err := dc.LoadFontFace(settings.FontPath, settings.FontHeight)
+	if err != nil {
+		return err
+	}
+	dc.SetColor(settings.FontColor)
+
+	if t.Underline {
+		t.String = unistyle.Underline(t.String, unistyle.UnderlineLine)
+	}
+
+	x, _, ax, ay, maxWidthForPosition, err := t.getTextDimensions(pos, settings)
+	if err != nil {
+		return errors.Wrap(err, "could not get dimensions to draw")
+	}
+	if settings.AvoidClipping {
+		maxWidthForPosition = float64(settings.Width)
+	}
+
+	// Just take all the possible space to write the text, later it will be cropped to just the necessary by using the
+	// CropToContent function
+	temp := gg.NewContext(dc.Width(), dc.Height())
+
+	if err = temp.LoadFontFace(settings.FontPath, settings.FontHeight); err != nil {
+		return err
+	}
+	temp.SetColor(settings.FontColor)
+
+	centerVertical := float64(dc.Height()) / 2
+
+	if settings.StrokeWidth != 0 {
+		drawTextWrappedWithStroke(t.String, settings.StrokeWidth, centerVertical, 0, 0.5, maxWidthForPosition, temp, settings.FontColor, settings.StrokeWidth, settings.StrokeColor, t.GetAlignment())
+	} else {
+		temp.DrawStringWrapped(t.String, 0, centerVertical, 0, 0.5, maxWidthForPosition, 2, t.GetAlignment())
+	}
+
+	img := temp.Image()
+
+	if settings.Rotation != 0 {
+		img = imaging.Rotate(img, settings.Rotation, color.Transparent)
+	}
+
+	img = CropToContent(img)
+
+	var y float64
+	x, y, ax, ay, err = t.getObjectPositions(pos, settings)
+	if err != nil {
+		return errors.Wrap(err, "could not get a correct position")
+	}
+	if settings.ShadowDistance != 0 {
+		shadow := getShadowFromImage(img, t.ShadowDistance, SIGMA)
+		shadowCtx := gg.NewContextForImage(shadow)
+		shadowCtx.DrawImageAnchored(img, (shadowCtx.Width()/2)-t.ShadowDistance, (shadowCtx.Height()/2)-t.ShadowDistance, 0.5, 0.5)
+		y1 := int(y) - (shadowCtx.Height() / 2) + (img.Bounds().Dy() / 2)
+		//x1 := int(x)-(shadowCtx.Width()/2)+(img.Bounds().Dx()/2)
+		x1 := int(x)
+		dc.DrawImageAnchored(shadowCtx.Image(), x1, y1, ax, ay)
+		return nil
+	}
+
+	dc.DrawImageAnchored(img, int(x), int(y), ax, ay)
+
+	return nil
+}
+
+// TODO remove if not used
+func drawTextWithStroke(t string, x, y, ax, ay float64, temp *gg.Context, textColor color.Color, strokeSize float64, strokeColor color.Color) {
+	temp.Push()
+	defer temp.Pop()
+
+	//Draw stroke
+	if strokeColor != nil {
+		temp.SetColor(strokeColor)
+		for dy := -strokeSize; dy <= strokeSize; dy++ {
+			for dx := -strokeSize; dx <= strokeSize; dx++ {
+				if dx*dx+dy*dy >= strokeSize*strokeSize {
+					// give it rounded corners
+					continue
+				}
+				x := x + dx
+				y := y + dy
+				temp.DrawStringAnchored(t, x, y, ax, ay)
+			}
+		}
+	}
+
+	//Draw text
+	temp.SetColor(textColor)
+	temp.DrawStringAnchored(t, x, y, ax, ay)
+}
+
+func drawTextWrappedWithStroke(t string, x, y, ax, ay, w float64, temp *gg.Context, textColor color.Color, strokeSize float64, strokeColor color.Color, align gg.Align) {
+	temp.Push()
+	defer temp.Pop()
+
+	//Draw stroke
+	if strokeColor != nil {
+		temp.SetColor(strokeColor)
+		for dy := -strokeSize; dy <= strokeSize; dy++ {
+			for dx := -strokeSize; dx <= strokeSize; dx++ {
+				if dx*dx+dy*dy >= strokeSize*strokeSize {
+					// give it rounded corners
+					continue
+				}
+				x := x + dx
+				y := y + dy
+				temp.DrawStringWrapped(t, x, y, ax, ay, w, 2, align)
+			}
+		}
+	}
+
+	//Draw text
+	temp.SetColor(textColor)
+	temp.DrawStringWrapped(t, x, y, ax, ay, w, 2, align)
+}
+
+func (t *Text) getTextDimensions(pos int, def Settings) (float64, float64, float64, float64, float64, error) {
+	ax, ay, maxWidth, err := t.GetAnchorPointsAndMaxWidth(pos, def)
+	if err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+
+	x, y, err := t.GetXYPosition(pos, def)
+	if err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+
+	return x, y, ax, ay, maxWidth, nil
+}
+
+func (p *Positioner) getObjectPositions(pos int, def Settings) (float64, float64, float64, float64, error) {
+	ax, ay, _, err := p.GetAnchorPointsAndMaxWidth(pos, def)
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	x, y, err := p.GetXYPosition(pos, def)
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+
+	return x, y, ax, ay, nil
+}
