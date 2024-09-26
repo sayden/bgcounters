@@ -12,13 +12,13 @@ type Counter struct {
 
 	Images []Image `json:"images"`
 	Texts  []Text  `json:"texts,omitempty"`
-	Extra  *extra  `json:"extra,omitempty"`
+	Extra  *Extra  `json:"extra,omitempty"`
 
 	Back *Counter `json:",omitempty"`
 }
 
-// TODO This extra contains data from all projects
-type extra struct {
+// TODO This Extra contains data from all projects
+type Extra struct {
 	PublicIcon         *imageExtraData `json:"public_icon,omitempty"`
 	CardImage          *imageExtraData `json:"card_image,omitempty"`
 	SkipCardGeneration bool            `json:"skip_card_generation,omitempty"`
@@ -54,7 +54,7 @@ func (c *Counter) GetCounterFilename(position int, filenumber int, suffix string
 	if filenumber >= 0 {
 		if position >= 0 && position <= 14 {
 			if c.Extra != nil {
-				return fmt.Sprintf("%s%s_%03d%s.png",
+				return fmt.Sprintf("%s_%s_%03d%s.png",
 					c.Extra.Side, name, filenumber, suffix)
 			}
 			if suffix != "" {
@@ -66,7 +66,14 @@ func (c *Counter) GetCounterFilename(position int, filenumber int, suffix string
 		return fmt.Sprintf("%03d%s.png", filenumber, suffix)
 	}
 
-	return fmt.Sprintf("%s%s%s.png", c.Extra.Side, name, suffix)
+	return fmt.Sprintf("%s_%s%s.png", c.Extra.Side, name, suffix)
+}
+
+type PrototypeCounter struct {
+	Counter
+
+	Images []Image `json:"images"`
+	Texts  []Text  `json:"texts,omitempty"`
 }
 
 func applyCounterScaling(c *Counter, scaling float64) {

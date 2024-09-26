@@ -20,11 +20,11 @@ type CardsTemplate struct {
 	Cards           []Card `json:"cards"`
 	MaxCardsPerFile int    `json:"max_cards_per_file"`
 
-	// Extra Extra `json:",omitempty"`
+	Extra CardsExtra `json:",omitempty"`
 }
 
-// Extra is a container for extra information used in different projects but that they are not common to all of them
-type Extra struct {
+// CardsExtra is a container for extra information used in different projects but that they are not common to all of them
+type CardsExtra struct {
 	FactionImage      string  `json:"faction_image,omitempty"`
 	FactionImageScale float64 `json:"faction_image_scale,omitempty"`
 	BackImage         string  `json:"back_image,omitempty"`
