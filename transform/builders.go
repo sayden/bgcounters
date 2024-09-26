@@ -47,6 +47,12 @@ func (bc *StepLossBackCounterBuilder) ToCounter(counter *counters.Counter) (*cou
 		return counter, nil
 	}
 
+	if counter.Extra == nil {
+		counter.Extra = &counters.Extra{Side: "back"}
+	} else {
+		counter.Extra.Side = "back"
+	}
+
 	counter.Images = append(
 		[]counters.Image{
 			{

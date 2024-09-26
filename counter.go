@@ -69,11 +69,11 @@ func (c *Counter) GetCounterFilename(position int, filenumber int, suffix string
 	return fmt.Sprintf("%s_%s%s.png", c.Extra.Side, name, suffix)
 }
 
-type PrototypeCounter struct {
+type CounterPrototype struct {
 	Counter
 
-	Images []Image `json:"images"`
-	Texts  []Text  `json:"texts,omitempty"`
+	ImagesPrototypes ImagePrototype `json:"image_prototypes,omitempty"`
+	TextsPrototypes  TextPrototype  `json:"text_prototypes,omitempty"`
 }
 
 func applyCounterScaling(c *Counter, scaling float64) {

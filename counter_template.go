@@ -24,7 +24,7 @@ type CounterTemplate struct {
 
 	Counters []Counter `json:"counters"`
 
-	Prototypes map[string]Counter `json:"prototypes"`
+	Prototypes map[string]CounterPrototype `json:"prototypes"`
 }
 
 // ParseCountersJsonFile reads a JSON files and parses it into a CounterTemplate after applying it some default

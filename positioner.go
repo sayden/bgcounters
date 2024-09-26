@@ -127,3 +127,16 @@ func (p *Positioner) GetXYPosition(pos int, def Settings) (float64, float64, err
 		return 0, 0, errors.New("the position provided is not in the range 0-16")
 	}
 }
+
+func (p *Positioner) getObjectPositions(pos int, def Settings) (float64, float64, float64, float64, error) {
+	ax, ay, _, err := p.GetAnchorPointsAndMaxWidth(pos, def)
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	x, y, err := p.GetXYPosition(pos, def)
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+
+	return x, y, ax, ay, nil
+}

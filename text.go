@@ -16,8 +16,6 @@ type Text struct {
 	String string `json:"string"`
 
 	Underline bool `json:"underline,omitempty"`
-	// TODO never used
-	Multiline bool `json:"multiline,omitempty"`
 }
 
 func (t *Text) SetWidth(w int) {
@@ -116,6 +114,26 @@ func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
 	return nil
 }
 
+func (t *Text) getTextDimensions(pos int, def Settings) (float64, float64, float64, float64, float64, error) {
+	ax, ay, maxWidth, err := t.GetAnchorPointsAndMaxWidth(pos, def)
+	if err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+
+	x, y, err := t.GetXYPosition(pos, def)
+	if err != nil {
+		return 0, 0, 0, 0, 0, err
+	}
+
+	return x, y, ax, ay, maxWidth, nil
+}
+
+type TextPrototype struct {
+	Text
+
+	StringList []string `json:"string_list"`
+}
+
 // TODO remove if not used
 func drawTextWithStroke(t string, x, y, ax, ay float64, temp *gg.Context, textColor color.Color, strokeSize float64, strokeColor color.Color) {
 	temp.Push()
@@ -165,31 +183,4 @@ func drawTextWrappedWithStroke(t string, x, y, ax, ay, w float64, temp *gg.Conte
 	//Draw text
 	temp.SetColor(textColor)
 	temp.DrawStringWrapped(t, x, y, ax, ay, w, 2, align)
-}
-
-func (t *Text) getTextDimensions(pos int, def Settings) (float64, float64, float64, float64, float64, error) {
-	ax, ay, maxWidth, err := t.GetAnchorPointsAndMaxWidth(pos, def)
-	if err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-
-	x, y, err := t.GetXYPosition(pos, def)
-	if err != nil {
-		return 0, 0, 0, 0, 0, err
-	}
-
-	return x, y, ax, ay, maxWidth, nil
-}
-
-func (p *Positioner) getObjectPositions(pos int, def Settings) (float64, float64, float64, float64, error) {
-	ax, ay, _, err := p.GetAnchorPointsAndMaxWidth(pos, def)
-	if err != nil {
-		return 0, 0, 0, 0, err
-	}
-	x, y, err := p.GetXYPosition(pos, def)
-	if err != nil {
-		return 0, 0, 0, 0, err
-	}
-
-	return x, y, ax, ay, nil
 }

@@ -83,6 +83,12 @@ func (i *Image) Draw(dc *gg.Context, pos int, _ Settings) error {
 	return nil
 }
 
+type ImagePrototype struct {
+	Image
+
+	PathList []string `json:"path_list"`
+}
+
 func getShadowFromImage(img image.Image, shadowDistance int, sigma int) image.Image {
 	grey := imaging.AdjustBrightness(img, -100)
 	w, h := getShadowImageSize(img, shadowDistance, sigma)

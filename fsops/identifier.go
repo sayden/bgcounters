@@ -32,6 +32,11 @@ func IdentifyJSONFileContent(data []byte) (counters.FileContent, error) {
 		return counters.FileContent_CounterTemplate, nil
 	}
 
+	_, _, _, err = jsonparser.Get(data, "prototypes")
+	if err == nil {
+		return counters.FileContent_CounterTemplate, nil
+	}
+
 	_, dataType, _, err := jsonparser.Get(data)
 	if err != nil {
 		return 0, errors.Wrap(err, "could not get root data in file")
