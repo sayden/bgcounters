@@ -10,7 +10,7 @@ import (
 	"github.com/thehivecorporation/log"
 )
 
-func jsonCountersToJsonFowCounters(counterTemplate *counters.CounterTemplate, byt []byte) (err error) {
+func jsonCountersToJsonFowCounters(counterTemplate *counters.CounterTemplate) (err error) {
 	log.Info("creating fow counters")
 	t, err := transform.CountersToCounters(
 		&transform.CountersToCountersConfig{
@@ -26,7 +26,7 @@ func jsonCountersToJsonFowCounters(counterTemplate *counters.CounterTemplate, by
 	return output.ToJSONFile(t, Cli.Json.OutputPath)
 }
 
-func jsonCountersToJsonCards(counterTemplate *counters.CounterTemplate, byt []byte) (err error) {
+func jsonCountersToJsonCards(counterTemplate *counters.CounterTemplate) (err error) {
 	qs, err := input.ReadQuotesFromFile(Cli.Json.QuotesFile)
 	if err != nil {
 		return errors.Wrap(err, "could not read quotes file")
@@ -80,17 +80,18 @@ func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters
 		// ignore counters if prototypes are present
 		counterTemplate.Counters = make([]counters.Counter, 0)
 
-		for _, counter := range counterTemplate.Prototypes {
+		for prototypeName, counter := range counterTemplate.Prototypes {
+			log.WithField("prototype", prototypeName).Info("creating counters from prototype")
 			// You can prototype texts and images, so one of the two must be present, get their length
 			length := 0
-			if len(counter.TextsPrototypes.StringList) > 0 {
-				length = len(counter.TextsPrototypes.StringList)
-				if len(counter.ImagesPrototypes.PathList) > 0 && len(counter.ImagesPrototypes.PathList) != length {
+			if len(counter.TextsPrototypes) > 0 && len(counter.TextsPrototypes[0].StringList) > 0 {
+				length = len(counter.TextsPrototypes[0].StringList)
+				if len(counter.ImagesPrototypes) > 0 && len(counter.ImagesPrototypes[0].PathList) > 0 && len(counter.ImagesPrototypes[0].PathList) != length {
 					return nil, errors.New("the number of images and texts prototypes must be the same")
 				}
-			} else if len(counter.ImagesPrototypes.PathList) > 0 {
-				length = len(counter.ImagesPrototypes.PathList)
-				if len(counter.TextsPrototypes.StringList) > 0 && len(counter.TextsPrototypes.StringList) != length {
+			} else if len(counter.ImagesPrototypes) > 0 && len(counter.ImagesPrototypes[0].PathList) > 0 {
+				length = len(counter.ImagesPrototypes)
+				if len(counter.TextsPrototypes) > 0 && len(counter.TextsPrototypes) != length {
 					return nil, errors.New("the number of images and texts prototypes must be the same")
 				}
 			} else {
@@ -103,23 +104,26 @@ func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters
 					return nil, err
 				}
 
-				if counter.TextsPrototypes.StringList != nil {
-					originalText := counters.Text{}
-					if err = reprint.FromTo(counter.TextsPrototypes.Text, &originalText); err != nil {
-						return nil, err
+				if counter.TextsPrototypes != nil {
+					for _, textPrototype := range counter.TextsPrototypes {
+						originalText := counters.Text{}
+						if err = reprint.FromTo(textPrototype.Text, &originalText); err != nil {
+							return nil, err
+						}
+						originalText.String = textPrototype.StringList[i]
+						newCounter.Texts = append(newCounter.Texts, originalText)
 					}
-					originalText.String = counter.TextsPrototypes.StringList[i]
-					newCounter.Texts = append(newCounter.Texts, originalText)
 				}
 
-				if counter.ImagesPrototypes.PathList != nil {
-					originalImage := counters.Image{}
-					if err = reprint.FromTo(counter.ImagesPrototypes.Image, &originalImage); err != nil {
-						return nil, err
+				if counter.ImagesPrototypes != nil {
+					for _, imagePrototype := range counter.ImagesPrototypes {
+						originalImage := counters.Image{}
+						if err = reprint.FromTo(imagePrototype.Image, &originalImage); err != nil {
+							return nil, err
+						}
+						originalImage.Path = imagePrototype.PathList[i]
+						newCounter.Images = append(newCounter.Images, originalImage)
 					}
-					originalImage.Path = counter.ImagesPrototypes.PathList[i]
-
-					newCounter.Images = append(newCounter.Images, originalImage)
 				}
 
 				counterTemplate.Counters = append(counterTemplate.Counters, newCounter)

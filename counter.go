@@ -72,8 +72,8 @@ func (c *Counter) GetCounterFilename(position int, filenumber int, suffix string
 type CounterPrototype struct {
 	Counter
 
-	ImagesPrototypes ImagePrototype `json:"image_prototypes,omitempty"`
-	TextsPrototypes  TextPrototype  `json:"text_prototypes,omitempty"`
+	ImagesPrototypes []ImagePrototype `json:"image_prototypes,omitempty"`
+	TextsPrototypes  []TextPrototype  `json:"text_prototypes,omitempty"`
 }
 
 func applyCounterScaling(c *Counter, scaling float64) {

@@ -84,10 +84,10 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 			return jsonToBackCounters(counterTemplate)
 		case "cards":
 			// JSON counters to Cards
-			return jsonCountersToJsonCards(counterTemplate, byt)
+			return jsonCountersToJsonCards(counterTemplate)
 		case "fow-counters":
 			// JSON counters to Fow Counters
-			return jsonCountersToJsonFowCounters(counterTemplate, byt)
+			return jsonCountersToJsonFowCounters(counterTemplate)
 		case "events":
 			// FIXME JSON to Events
 			return jsonToJsonCardEvents(events)

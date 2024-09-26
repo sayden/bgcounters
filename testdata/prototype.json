@@ -17,14 +17,22 @@
   "font_path": "assets/font-bebas.ttf",
   "prototypes": {
     "my_prototype": {
-      "text_prototypes": {
-        "position": 2,
-        "string_list": ["binoculars", "stripe"]
-      },
-      "image_prototypes": {
-        "position": 1,
-        "path_list": ["assets/binoculars.png", "assets/stripe.jpg"]
-      }
+      "text_prototypes": [
+        {
+          "position": 2,
+          "string_list": ["binoculars", "stripe"]
+        },
+        {
+          "position": 3,
+          "string_list": ["A", "B"]
+        }
+      ],
+      "image_prototypes": [
+        {
+          "position": 1,
+          "path_list": ["assets/binoculars.png", "assets/stripe.jpg"]
+        }
+      ]
     }
   }
 }
