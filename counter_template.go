@@ -11,8 +11,8 @@ import (
 
 type CounterTemplate struct {
 	Settings
-	Rows    int `json:"rows" default:"2"`
-	Columns int `json:"columns" default:"2"`
+	Rows    int `json:"rows,omitempty" default:"2"`
+	Columns int `json:"columns,omitempty" default:"2"`
 
 	Mode         string  `json:"mode"`
 	OutputFolder string  `json:"output_folder" default:"output"`
@@ -20,11 +20,11 @@ type CounterTemplate struct {
 	Scaling      float64 `json:"scaling" default:"1.0"`
 
 	// 0-14 Specify an index number to use when writing a different file for each counter. Multiplier is ignored then
-	IndexNumberForFilename int `json:"index_number_for_filename" default:"-1"`
+	IndexNumberForFilename int `json:"index_number_for_filename,omitempty" default:"-1"`
 
 	Counters []Counter `json:"counters"`
 
-	Prototypes map[string]CounterPrototype `json:"prototypes"`
+	Prototypes map[string]CounterPrototype `json:"prototypes,omitempty"`
 }
 
 // ParseCountersJsonFile reads a JSON files and parses it into a CounterTemplate after applying it some default

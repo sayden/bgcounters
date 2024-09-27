@@ -1,6 +1,8 @@
 package main
 
 import (
+	"sort"
+
 	"github.com/pkg/errors"
 	"github.com/qdm12/reprint"
 	"github.com/sayden/counters"
@@ -77,11 +79,22 @@ func jsonToBackCounters(counterTemplate *counters.CounterTemplate) (err error) {
 func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters.CounterTemplate, err error) {
 	// JSON counters to Counters, check Prototype in CounterTemplate
 	if counterTemplate.Prototypes != nil {
-		// ignore counters if prototypes are present
-		counterTemplate.Counters = make([]counters.Counter, 0)
+		if counterTemplate.Counters == nil {
+			counterTemplate.Counters = make([]counters.Counter, 0)
+		}
 
-		for prototypeName, counter := range counterTemplate.Prototypes {
+		// sort prototypes by name, to ensure consistent output filenames this is a small
+		// inconvenience, because iterating over maps in Go returns keys in random order
+		names := make([]string, 0, len(counterTemplate.Prototypes))
+		for name := range counterTemplate.Prototypes {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+
+		for _, prototypeName := range names {
+			counter := counterTemplate.Prototypes[prototypeName]
 			log.WithField("prototype", prototypeName).Info("creating counters from prototype")
+
 			// You can prototype texts and images, so one of the two must be present, get their length
 			length := 0
 			if len(counter.TextsPrototypes) > 0 && len(counter.TextsPrototypes[0].StringList) > 0 {
@@ -131,6 +144,7 @@ func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters
 		}
 
 		counterTemplate.Prototypes = nil
+
 		return counterTemplate, nil
 	}
 

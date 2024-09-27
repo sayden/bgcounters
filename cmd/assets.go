@@ -6,10 +6,6 @@ package main
 import (
 	"github.com/alecthomas/kong"
 	"github.com/pkg/errors"
-	"github.com/sayden/counters"
-	"github.com/sayden/counters/input"
-	"github.com/sayden/counters/output"
-	"github.com/thehivecorporation/log"
 )
 
 const (
@@ -39,51 +35,11 @@ func (i *AssetsOutput) Run(ctx *kong.Context) error {
 	switch Cli.Assets.OutputContent {
 	// Outputs blocks images
 	case "blocks":
-		counterTemplate, err := input.ReadCounterTemplate(Cli.Assets.InputPath, Cli.Assets.OutputPath)
-		if err != nil {
-			return err
-		}
-
-		// Override output path with the one provided in the CLI
-		if Cli.Assets.OutputPath != "" {
-			log.WithField("output_path", Cli.Assets.OutputPath).Info("Overriding output path")
-			counterTemplate.OutputFolder = Cli.Assets.OutputPath
-		}
-
-		var backCounterTemplate *counters.CounterTemplate
-		if i.BlockBack != "" {
-			if backCounterTemplate, err = input.ReadCounterTemplate(Cli.Assets.BlockBack); err != nil {
-				return err
-			}
-		}
-
-		return output.CountersToBlocks(counterTemplate, backCounterTemplate)
+		return jsonToBlock(i.BlockBack)
 	case "counters":
-		counterTemplate, err := counters.ParseCountersJsonFile(Cli.Assets.InputPath, Cli.Assets.OutputPath)
-		if err != nil {
-			return err
-		}
-
-		// Override output path with the one provided in the CLI
-		if Cli.Assets.OutputPath != "" {
-			log.WithField("output_path", Cli.Assets.OutputPath).Info("Overriding output path")
-			counterTemplate.OutputFolder = Cli.Assets.OutputPath
-		}
-
-		return output.CountersToPNG(counterTemplate)
+		return jsonToAsset(Cli.Assets.InputPath, Cli.Assets.OutputPath)
 	case "cards":
-		cardsTemplate, err := input.ReadJSONCardsFile(Cli.Assets.InputPath)
-		if err != nil {
-			return errors.Wrap(err, "error trying to read json cards file")
-		}
-
-		// Override output path with the one provided in the CLI
-		if Cli.Assets.OutputPath != "" {
-			log.WithField("output_path", Cli.Assets.OutputPath).Info("Overriding output path")
-			cardsTemplate.OutputPath = Cli.Assets.OutputPath
-		}
-
-		return output.CardsToPNG(cardsTemplate)
+		return jsonToCards()
 	}
 
 	return errors.New("'--output-content' not recognized for Image output")

@@ -12,7 +12,8 @@ import (
 
 func TestJSONPrototypes(t *testing.T) {
 	// read the json file with testing data
-	filepath := "../testdata/prototype.json"
+	// filepath := "../testdata/prototype.json"
+	filepath := "../../prototypes/ukraine/json/counters/markers/front.json"
 	f, err := os.Open(filepath)
 	assert.NoError(t, err)
 	defer f.Close()

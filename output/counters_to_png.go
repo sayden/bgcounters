@@ -148,7 +148,7 @@ func (iw *imageWriter) createTiledFile(counter *counters.Counter, columns, row *
 func GetCanvasForCounter(cc *counters.Counter, t *counters.CounterTemplate) *gg.Context {
 	dc := gg.NewContext(cc.Width, cc.Height)
 	if err := dc.LoadFontFace(cc.FontPath, cc.FontHeight); err != nil {
-		log.WithField("font", cc.FontPath).Fatal(err)
+		log.WithFields(log.Fields{"font": cc.FontPath, "height": cc.FontHeight}).Fatal(err)
 	}
 
 	dc.Push()

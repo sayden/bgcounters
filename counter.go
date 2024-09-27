@@ -7,10 +7,10 @@ import "fmt"
 type Counter struct {
 	Settings
 
-	SingleStep bool `json:"single_step"`
-	Frame      bool `json:"frame"`
+	SingleStep bool `json:"single_step,omitempty"`
+	Frame      bool `json:"frame,omitempty"`
 
-	Images []Image `json:"images"`
+	Images []Image `json:"images,omitempty"`
 	Texts  []Text  `json:"texts,omitempty"`
 	Extra  *Extra  `json:"extra,omitempty"`
 

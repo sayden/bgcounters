@@ -15,8 +15,8 @@ type Image struct {
 	Positioner
 
 	Path          string  `json:"path"`
-	Scale         float64 `json:"scale" default:"1"`
-	AvoidCropping bool    `json:"avoid_cropping"`
+	Scale         float64 `json:"scale,omitempty" default:"1"`
+	AvoidCropping bool    `json:"avoid_cropping,omitempty"`
 }
 
 func (i *Image) SetWidth(w int) {
