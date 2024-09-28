@@ -3,12 +3,61 @@ package output
 import (
 	"os"
 	"path"
+	"strings"
 
+	"github.com/charmbracelet/bubbles/progress"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fogleman/gg"
 	"github.com/pkg/errors"
 	"github.com/sayden/counters"
 	"github.com/thehivecorporation/log"
 )
+
+const (
+	padding  = 2
+	maxWidth = 80
+)
+
+type model struct {
+	total    float64
+	percent  float64
+	progress progress.Model
+}
+
+func (m *model) Init() tea.Cmd {
+	return nil
+}
+
+func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		return m, tea.Quit
+
+	case int:
+		m.percent = float64(msg) / m.total
+		if m.percent >= 1.0 {
+			m.percent = 1.0
+			return m, tea.Quit
+		}
+		return m, nil
+
+	case tea.WindowSizeMsg:
+		m.progress.Width = msg.Width - padding*2 - 4
+		if m.progress.Width >= maxWidth {
+			m.progress.Width = maxWidth
+		}
+		return m, nil
+
+	default:
+		return m, tea.Quit
+	}
+}
+
+func (m *model) View() string {
+	pad := strings.Repeat(" ", padding)
+	return "\n" +
+		pad + m.progress.ViewAs(m.percent) + "\n\n"
+}
 
 func CountersToPNG(template *counters.CounterTemplate) error {
 	var canvas *gg.Context
@@ -21,9 +70,24 @@ func CountersToPNG(template *counters.CounterTemplate) error {
 		}
 	}
 
-	counterPos := 0
-	row := 0
-	fileNumber := 1
+	var (
+		total      = 0
+		counterPos = 0
+		row        = 0
+		fileNumber = 1
+	)
+
+	// Progress bar
+	for _, c := range template.Counters {
+		if !c.Skip {
+			total += c.Multiplier
+		}
+	}
+	prog := progress.New(progress.WithScaledGradient("#FF7CCB", "#FDFF8C"))
+	program := tea.NewProgram(&model{progress: prog, total: float64(total)})
+	go program.Run()
+	defer program.Quit()
+
 	//Iterate rows and columns, painting a counter on each
 iteration:
 	for {
@@ -47,6 +111,8 @@ iteration:
 				return err
 			}
 
+			// Update the progress bar
+			program.Send(counterPos)
 			counterPos++
 		}
 
@@ -57,6 +123,9 @@ iteration:
 	if template.Mode == counters.TEMPLATE_MODE_TILES {
 		return canvas.SavePNG(template.OutputFolder)
 	}
+
+	program.Send(100)
+	program.Wait()
 
 	return nil
 }

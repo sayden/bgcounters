@@ -1,9 +1,13 @@
 package main
 
 import (
+	"os"
+
 	"github.com/alecthomas/kong"
-	"github.com/thehivecorporation/log"
+	"github.com/charmbracelet/log"
 )
+
+var logger = log.New(os.Stderr)
 
 var Cli struct {
 	// Asset option is used to generate assets directly. This is usually counters images or Card sheets.
@@ -17,10 +21,14 @@ var Cli struct {
 }
 
 func main() {
+	logger.SetReportTimestamp(false)
+	logger.SetReportCaller(false)
+	logger.SetLevel(log.DebugLevel)
+
 	ctx := kong.Parse(&Cli)
 
 	err := ctx.Run()
 	ctx.FatalIfErrorf(err)
 
-	log.Info("Done!")
+	log.Info("Done")
 }

@@ -36,6 +36,7 @@ func jsonToAsset(inputPath, outputPath string) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "error trying to convert a counter template into another counter template")
 	}
+	newTemplate.Scaling = 1
 
 	byt, err := json.Marshal(newTemplate)
 	if err != nil {

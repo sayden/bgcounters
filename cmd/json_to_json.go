@@ -3,13 +3,13 @@ package main
 import (
 	"sort"
 
+	"github.com/charmbracelet/log"
 	"github.com/pkg/errors"
 	"github.com/qdm12/reprint"
 	"github.com/sayden/counters"
 	"github.com/sayden/counters/input"
 	"github.com/sayden/counters/output"
 	"github.com/sayden/counters/transform"
-	"github.com/thehivecorporation/log"
 )
 
 func jsonCountersToJsonFowCounters(counterTemplate *counters.CounterTemplate) (err error) {
@@ -39,7 +39,7 @@ func jsonCountersToJsonCards(counterTemplate *counters.CounterTemplate) (err err
 	}
 	cardsTemplate, err := input.ReadJSONCardsFile(Cli.Json.CardTemplateFilepath)
 	if err != nil {
-		log.WithField("file", Cli.Json.CardTemplateFilepath).WithError(err).Fatal("could not read input file")
+		log.Fatal("could not read input file", "file", Cli.Json.CardTemplateFilepath, "error", err)
 	}
 
 	cards, err := transform.CountersToCards(
@@ -93,13 +93,13 @@ func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters
 
 		for _, prototypeName := range names {
 			counter := counterTemplate.Prototypes[prototypeName]
-			log.WithField("prototype", prototypeName).Info("creating counters from prototype")
+			log.Debug("creating counters from prototype", "prototype", prototypeName)
 
 			// You can prototype texts and images, so one of the two must be present, get their length
 			length := 0
 			if len(counter.TextsPrototypes) > 0 && len(counter.TextsPrototypes[0].StringList) > 0 {
 				length = len(counter.TextsPrototypes[0].StringList)
-				if len(counter.ImagesPrototypes) > 0 && len(counter.ImagesPrototypes[0].PathList) > 0 && len(counter.ImagesPrototypes[0].PathList) != length {
+				if len(counter.ImagesPrototypes) > 0 && len(counter.ImagesPrototypes[0].PathList) != length {
 					return nil, errors.New("the number of images and texts prototypes must be the same")
 				}
 			} else if len(counter.ImagesPrototypes) > 0 && len(counter.ImagesPrototypes[0].PathList) > 0 {
@@ -148,7 +148,9 @@ func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters
 		return counterTemplate, nil
 	}
 
-	return nil, errors.New("no prototypes found in the counter template")
+	log.Debug("no prototypes found in the counter template")
+
+	return counterTemplate, nil
 }
 
 func jsonToJsonCardEvents(events []counters.Event) (err error) {
