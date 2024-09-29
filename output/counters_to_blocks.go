@@ -17,7 +17,9 @@ func CountersToBlocks(frontTemplate, backTemplate *counters.CounterTemplate) err
 
 	counterPos := 0
 	row := 0
-	fileNumber := 1
+	// fileNumber := 1
+	gs := newGlobalState(frontTemplate, canvas)
+
 	//Iterate rows and columns, painting a counter on each
 iteration:
 	for {
@@ -48,7 +50,8 @@ iteration:
 				addBackCounterToBlockCanvas(backCounterCanvas, blockCanvas)
 			}
 
-			if err = writeCounterToFile(blockCanvas, counter, frontTemplate, &fileNumber, &columns, &row, canvas); err != nil {
+			err = writeCounterToFile(blockCanvas, counter, gs)
+			if err != nil {
 				return err
 			}
 

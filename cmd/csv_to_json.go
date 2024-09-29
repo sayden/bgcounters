@@ -50,10 +50,10 @@ func csvToCards(byt []byte) (err error) {
 		return err
 	}
 
-	if Cli.Json.OutputDestination != "" {
-		content.OutputPath = Cli.Json.OutputDestination
+	if Cli.Json.Destination != "" {
+		content.OutputPath = Cli.Json.Destination
 	}
-	content.OutputPath = Cli.Json.OutputDestination
+	content.OutputPath = Cli.Json.Destination
 
 	if Cli.Json.OutputPath == "" {
 		return errors.New("an output path for the output file is required")

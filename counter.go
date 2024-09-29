@@ -1,6 +1,9 @@
 package counters
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Counter is POGO-like holder for data needed for other parts to fill and draw
 // a counter in a container
@@ -14,6 +17,7 @@ type Counter struct {
 	Texts  []Text  `json:"texts,omitempty"`
 	Extra  *Extra  `json:"extra,omitempty"`
 
+	// Generate the following counter with 'back' suffix in its filename
 	Back *Counter `json:",omitempty"`
 }
 
@@ -25,6 +29,7 @@ type Extra struct {
 	Title              string          `json:"title,omitempty"`
 	Cost               int             `json:"cost,omitempty"`
 	Side               string          `json:"side,omitempty"`
+	TitlePosition      *int            `json:"title_position,omitempty"`
 }
 
 type imageExtraData struct {
@@ -48,25 +53,51 @@ func (c *Counter) GetTextInPosition(i int) string {
 	return ""
 }
 
-func (c *Counter) GetCounterFilename(position int, filenumber int, suffix string) string {
+// filenumber: CounterTemplate.PositionNumberForFilename. So it will always be fixed number
+// position: The position of the text in the counter (0-16)
+// suffix: A suffix on the file. Constant
+func (c *Counter) GetCounterFilename(position int, suffix string, filenumber int, filenamesInUse map[string]bool) string {
+	var b strings.Builder
 	name := c.GetTextInPosition(position)
 
-	if filenumber >= 0 {
-		if position >= 0 && position <= 14 {
-			if c.Extra != nil {
-				return fmt.Sprintf("%s_%s_%03d%s.png",
-					c.Extra.Side, name, filenumber, suffix)
-			}
-			if suffix != "" {
-				return fmt.Sprintf("%03d_%s_%s.png", filenumber, name, suffix)
-			}
-
-			return fmt.Sprintf("%03d_%s.png", filenumber, name)
+	if c.Extra != nil {
+		if c.Extra.TitlePosition != nil && *c.Extra.TitlePosition != position {
+			name = c.GetTextInPosition(*c.Extra.TitlePosition)
 		}
-		return fmt.Sprintf("%03d%s.png", filenumber, suffix)
+
+		if c.Extra.Side != "" {
+			b.WriteString(c.Extra.Side)
+			b.WriteString(" ")
+		}
+
+		if c.Extra.Title != "" {
+			b.WriteString(c.Extra.Title)
+			b.WriteString(" ")
+		}
 	}
 
-	return fmt.Sprintf("%s_%s%s.png", c.Extra.Side, name, suffix)
+	if name != "" {
+		b.WriteString(name + " ")
+	}
+
+	if suffix != "" {
+		b.WriteString(suffix)
+	}
+
+	res := b.String()
+	res = strings.TrimSpace(res)
+
+	if filenamesInUse[res] {
+		if filenumber >= 0 {
+			res += fmt.Sprintf(" %03d", filenumber)
+		}
+	}
+
+	filenamesInUse[res] = true
+
+	res += ".png"
+
+	return res
 }
 
 type CounterPrototype struct {

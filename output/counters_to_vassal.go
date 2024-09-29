@@ -177,15 +177,19 @@ func GetVassalDataForCounters(t *counters.CounterTemplate, xmlFilepath string) (
 		gpid++
 	}
 
+	filenamesInUse := make(map[string]bool)
+
 	for i, counter := range t.Counters {
 		buf := bytes.NewBufferString("")
 		if err = xmlTemplate.ExecuteTemplate(
 			buf, "xml", templateData{
 				Filename: counter.GetCounterFilename(
-					t.IndexNumberForFilename,
-					i+1, "",
+					t.PositionNumberForFilename,
+					"",
+					i+1,
+					filenamesInUse,
 				), //+1 because file number starts in 1 instead of 0 when they are generated
-				PieceName: counter.GetCounterFilename(t.IndexNumberForFilename, -1, ""),
+				PieceName: counter.GetCounterFilename(t.PositionNumberForFilename, "", -1, filenamesInUse),
 				Id:        fmt.Sprintf("%d", id),
 			},
 		); err != nil {
@@ -194,7 +198,7 @@ func GetVassalDataForCounters(t *counters.CounterTemplate, xmlFilepath string) (
 		id++
 
 		piece := pieceSlot{
-			EntryName: counter.GetTextInPosition(t.IndexNumberForFilename),
+			EntryName: counter.GetTextInPosition(t.PositionNumberForFilename),
 			Gpid:      fmt.Sprintf("%d", gpid),
 			Height:    t.Height,
 			Width:     t.Width,

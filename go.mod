@@ -5,6 +5,9 @@ go 1.18
 require (
 	github.com/alecthomas/kong v0.5.0
 	github.com/buger/jsonparser v1.1.1
+	github.com/charmbracelet/bubbles v0.20.0
+	github.com/charmbracelet/bubbletea v1.1.1
+	github.com/charmbracelet/log v0.4.0
 	github.com/creasty/defaults v1.5.1
 	github.com/danielgtaylor/unistyle v0.0.0-20190218054314-fff153823f5f
 	github.com/disintegration/imaging v1.6.2
@@ -20,11 +23,8 @@ require (
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/charmbracelet/bubbles v0.20.0 // indirect
-	github.com/charmbracelet/bubbletea v1.1.1 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/charmbracelet/lipgloss v0.13.0 // indirect
-	github.com/charmbracelet/log v0.4.0 // indirect
 	github.com/charmbracelet/x/ansi v0.2.3 // indirect
 	github.com/charmbracelet/x/term v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

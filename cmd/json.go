@@ -9,16 +9,17 @@ import (
 	"github.com/sayden/counters/fsops"
 	"github.com/sayden/counters/input"
 	"github.com/sayden/counters/output"
+	"github.com/sayden/counters/transform"
 )
 
 type JsonOutput struct {
-	InputPath  string `help:"Input path of the file to read" short:"i" required:"true"`
-	OutputPath string `help:"Path to the folder to write the JSON" short:"o"`
-	OutputType string `help:"Type of content to produce: back-counters, cards, fow-counters, counters or events" short:"c"`
+	InputPath   string `help:"Input path of the file to read" short:"i" required:"true"`
+	OutputPath  string `help:"Path to the folder to write the JSON" short:"o"`
+	OutputType  string `help:"Type of content to produce: back-counters, cards, fow-counters, counters or events" short:"t"`
+	Destination string `help:"When generating a JSON Template, this contains the destination folder for images inside the template" short:"d"`
 
 	EventsPoolFile          string `help:"A file to take 'events' from"`
 	BackImage               string `help:"The image for the back of the cards"`
-	OutputDestination       string `help:"When generating a JSON Template, this contains the destination folder for images inside the template"`
 	CardTemplateFilepath    string `help:"When writing cards from a CSV, a template for those cards must be provided"`
 	CounterTemplateFilepath string `help:"When writing counters from a CSV, a template for those counters must be provided"`
 	BackgroundImages        string `help:"Path to a folder containing background images for the cards"`
@@ -80,8 +81,25 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 			return output.ToJSONFile(newTempl, Cli.Json.OutputPath)
 
 		case "back-counters":
+			// JSON counters to Counters
+			newTempl, err := jsonPrototypeToJson(counterTemplate)
+			if err != nil {
+				return errors.Wrap(err, "error trying to convert a counter template into another counter template")
+			}
+
 			// JSON counters to Back Counters
-			return jsonToBackCounters(counterTemplate)
+			finalCounters, err := transform.CountersToCounters(
+				&transform.CountersToCountersConfig{
+					OriginalCounterTemplate: newTempl,
+					OutputPathInTemplate:    Cli.Json.Destination,
+					CounterBuilder:          &transform.StepLossBackCounterBuilder{},
+				},
+			)
+			if err != nil {
+				return errors.Wrap(err, "error trying to convert a counter template into another counter template")
+			}
+
+			return output.ToJSONFile(finalCounters, Cli.Json.OutputPath)
 		case "cards":
 			// JSON counters to Cards
 			return jsonCountersToJsonCards(counterTemplate)

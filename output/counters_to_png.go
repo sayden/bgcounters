@@ -59,6 +59,25 @@ func (m *model) View() string {
 		pad + m.progress.ViewAs(m.percent) + "\n\n"
 }
 
+type globalState struct {
+	counterPos     int
+	row            int
+	columns        int
+	fileNumber     int
+	filenamesInUse map[string]bool
+	template       *counters.CounterTemplate
+	canvas         *gg.Context
+}
+
+func newGlobalState(template *counters.CounterTemplate, canvas *gg.Context) *globalState {
+	return &globalState{
+		filenamesInUse: make(map[string]bool),
+		fileNumber:     1,
+		canvas:         canvas,
+		template:       template,
+	}
+}
+
 func CountersToPNG(template *counters.CounterTemplate) error {
 	var canvas *gg.Context
 	if template.Mode == counters.TEMPLATE_MODE_TILES {
@@ -71,11 +90,14 @@ func CountersToPNG(template *counters.CounterTemplate) error {
 	}
 
 	var (
-		total      = 0
+		total = 0
+
 		counterPos = 0
 		row        = 0
-		fileNumber = 1
+		// fileNumber = 1
 	)
+
+	gs := newGlobalState(template, canvas)
 
 	// Progress bar
 	for _, c := range template.Counters {
@@ -91,8 +113,9 @@ func CountersToPNG(template *counters.CounterTemplate) error {
 	//Iterate rows and columns, painting a counter on each
 iteration:
 	for {
-		for columns := 0; columns < template.Columns; columns++ {
-			if counterPos == len(template.Counters) {
+		// for columns := 0; columns < template.Columns; columns++ {
+		for gs.columns = 0; gs.columns < template.Columns; gs.columns++ {
+			if counterPos >= len(template.Counters) {
 				break iteration
 			}
 
@@ -107,7 +130,9 @@ iteration:
 				return err
 			}
 
-			if err = writeCounterToFile(counterCanvas, counter, template, &fileNumber, &columns, &row, canvas); err != nil {
+			// err = writeCounterToFile(counterCanvas, counter, template, &fileNumber, &columns, &row, canvas)
+			err = writeCounterToFile(counterCanvas, counter, gs)
+			if err != nil {
 				return err
 			}
 
@@ -135,36 +160,35 @@ type imageWriter struct {
 	template *counters.CounterTemplate
 }
 
-func writeCounterToFile(dc *gg.Context, counter counters.Counter, template *counters.CounterTemplate, fileNumber *int, columns, row *int, canvas *gg.Context) error {
+func writeCounterToFile(dc *gg.Context, counter counters.Counter, gs *globalState) error {
 	iw := imageWriter{
 		dc:       dc,
-		template: template,
+		template: gs.template,
 	}
 	var suffix string
 	if counter.Back != nil {
 		suffix = "-front"
 	}
 
-	switch template.Mode {
+	switch gs.template.Mode {
 	case counters.TEMPLATE_MODE_TEMPLATE:
-		n, err := iw.createFile(&counter, fileNumber, suffix)
+		err := iw.createFile(&counter, gs, suffix)
 		if err != nil {
 			return errors.Wrap(err, "error trying to write counter file")
 		}
 
 		if counter.Back != nil {
 			suffix = "-back"
-			*fileNumber -= n
-			t, err := iw.createFile(counter.Back, fileNumber, suffix)
-			if err != nil || t != n {
+			if err = iw.createFile(counter.Back, gs, suffix); err != nil {
 				return errors.Wrap(err, "error trying to write counter file")
 			}
+			gs.fileNumber++
 		}
 	case counters.TEMPLATE_MODE_TILES:
 		if counter.Back != nil {
-			iw.createTiledFile(counter.Back, columns, row, canvas)
+			iw.createTiledFile(counter.Back, gs)
 		}
-		iw.createTiledFile(&counter, columns, row, canvas)
+		iw.createTiledFile(&counter, gs)
 	default:
 		return errors.New("unknown template mode or template mode is empty")
 	}
@@ -172,46 +196,120 @@ func writeCounterToFile(dc *gg.Context, counter counters.Counter, template *coun
 	return nil
 }
 
+// func writeCounterToFile(dc *gg.Context, counter counters.Counter, template *counters.CounterTemplate, fileNumber *int, columns, row *int, canvas *gg.Context) error {
+// 	iw := imageWriter{
+// 		dc:       dc,
+// 		template: template,
+// 	}
+// 	var suffix string
+// 	if counter.Back != nil {
+// 		suffix = "-front"
+// 	}
+//
+// 	switch template.Mode {
+// 	case counters.TEMPLATE_MODE_TEMPLATE:
+// 		err := iw.createFile(&counter, fileNumber, suffix)
+// 		if err != nil {
+// 			return errors.Wrap(err, "error trying to write counter file")
+// 		}
+//
+// 		if counter.Back != nil {
+// 			suffix = "-back"
+// 			if err = iw.createFile(counter.Back, fileNumber, suffix); err != nil {
+// 				return errors.Wrap(err, "error trying to write counter file")
+// 			}
+// 			*fileNumber++
+// 		}
+// 	case counters.TEMPLATE_MODE_TILES:
+// 		if counter.Back != nil {
+// 			iw.createTiledFile(counter.Back, columns, row, canvas)
+// 		}
+// 		iw.createTiledFile(&counter, columns, row, canvas)
+// 	default:
+// 		return errors.New("unknown template mode or template mode is empty")
+// 	}
+//
+// 	return nil
+// }
+
 // createFile creates a file with the counter image. Filenumber is the filename, a pointer is passed to be able to use
 // the multiplier to create more than one file with the same counter
-func (iw *imageWriter) createFile(counter *counters.Counter, fileNumber *int, suffix string) (int, error) {
+func (iw *imageWriter) createFile(counter *counters.Counter, gs *globalState, suffix string) error {
 	_ = os.MkdirAll(iw.template.OutputFolder, 0750)
 
 	if counter.Multiplier == 0 {
 		counter.Multiplier = 1
 	}
 
-	starting := *fileNumber
-
 	// Use sequencing of numbers or a position in the counter texts to name files
 	for i := 0; i < counter.Multiplier; i++ {
-		filepath := path.Join(iw.template.OutputFolder, counter.GetCounterFilename(iw.template.IndexNumberForFilename, *fileNumber, suffix))
+		counterFilename := counter.GetCounterFilename(iw.template.PositionNumberForFilename, suffix, gs.fileNumber, gs.filenamesInUse)
+		filepath := path.Join(iw.template.OutputFolder, counterFilename)
 		if counter.Skip {
 			continue
 		}
+
+		log.Debug("Saving file: ", filepath)
 		if err := iw.dc.SavePNG(filepath); err != nil {
 			log.WithField("file", filepath).Error("could not save PNG file")
-			return 0, err
+			return err
 		}
-		*fileNumber++
+		gs.fileNumber++
 	}
 
-	return *fileNumber - starting, nil
+	return nil
 }
+
+// func (iw *imageWriter) createFile(counter *counters.Counter, fileNumber *int, suffix string) error {
+// 	_ = os.MkdirAll(iw.template.OutputFolder, 0750)
+//
+// 	if counter.Multiplier == 0 {
+// 		counter.Multiplier = 1
+// 	}
+//
+// 	// Use sequencing of numbers or a position in the counter texts to name files
+// 	for i := 0; i < counter.Multiplier; i++ {
+// 		counterFilename := counter.GetCounterFilename(iw.template.PositionNumberForFilename, *fileNumber, suffix)
+// 		filepath := path.Join(iw.template.OutputFolder, counterFilename)
+// 		if counter.Skip {
+// 			continue
+// 		}
+//
+// 		if err := iw.dc.SavePNG(filepath); err != nil {
+// 			log.WithField("file", filepath).Error("could not save PNG file")
+// 			return err
+// 		}
+// 		*fileNumber++
+// 	}
+//
+// 	return nil
+// }
 
 // createTiledFile creates a file with the counter image. Filenumber is the filename, a row and column pointer
 // is passed to be able to use the multiplier to create more than one counter in the same sheet
-func (iw *imageWriter) createTiledFile(counter *counters.Counter, columns, row *int, canvas *gg.Context) {
+func (iw *imageWriter) createTiledFile(counter *counters.Counter, gs *globalState) {
 	for i := 0; i < counter.Multiplier; i++ {
-		canvas.DrawImage(iw.dc.Image(), *columns*counter.Width, *row*counter.Height)
-		*columns++
-		if *columns == iw.template.Columns {
-			*columns = 0
-			*row++
+		gs.canvas.DrawImage(iw.dc.Image(), gs.columns*counter.Width, gs.row*counter.Height)
+		gs.columns++
+		if gs.columns == iw.template.Columns {
+			gs.columns = 0
+			gs.row++
 		}
 	}
-	*columns--
+	gs.columns--
 }
+
+// func (iw *imageWriter) createTiledFile(counter *counters.Counter, columns, row *int, canvas *gg.Context) {
+// 	for i := 0; i < counter.Multiplier; i++ {
+// 		canvas.DrawImage(iw.dc.Image(), *columns*counter.Width, *row*counter.Height)
+// 		*columns++
+// 		if *columns == iw.template.Columns {
+// 			*columns = 0
+// 			*row++
+// 		}
+// 	}
+// 	*columns--
+// }
 
 // GetCanvasForCounter creates a canvas for a counter definition.
 func GetCanvasForCounter(cc *counters.Counter, t *counters.CounterTemplate) *gg.Context {

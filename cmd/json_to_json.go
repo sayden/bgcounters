@@ -3,7 +3,6 @@ package main
 import (
 	"sort"
 
-	"github.com/charmbracelet/log"
 	"github.com/pkg/errors"
 	"github.com/qdm12/reprint"
 	"github.com/sayden/counters"
@@ -13,11 +12,12 @@ import (
 )
 
 func jsonCountersToJsonFowCounters(counterTemplate *counters.CounterTemplate) (err error) {
-	log.Info("creating fow counters")
+	logger.Info("creating fow counters")
+
 	t, err := transform.CountersToCounters(
 		&transform.CountersToCountersConfig{
 			OriginalCounterTemplate: counterTemplate,
-			OutputPathInTemplate:    Cli.Json.OutputDestination,
+			OutputPathInTemplate:    Cli.Json.Destination,
 			CounterBuilder:          &transform.SimpleFowCounterBuilder{},
 		},
 	)
@@ -39,7 +39,7 @@ func jsonCountersToJsonCards(counterTemplate *counters.CounterTemplate) (err err
 	}
 	cardsTemplate, err := input.ReadJSONCardsFile(Cli.Json.CardTemplateFilepath)
 	if err != nil {
-		log.Fatal("could not read input file", "file", Cli.Json.CardTemplateFilepath, "error", err)
+		logger.Fatal("could not read input file", "file", Cli.Json.CardTemplateFilepath, "error", err)
 	}
 
 	cards, err := transform.CountersToCards(
@@ -48,7 +48,7 @@ func jsonCountersToJsonCards(counterTemplate *counters.CounterTemplate) (err err
 			CardTemplate:     cardsTemplate,
 			CardCreator: &transform.QuotesToCardBuilder{
 				Quotes:         qs,
-				IndexForTitles: counterTemplate.IndexNumberForFilename,
+				IndexForTitles: counterTemplate.PositionNumberForFilename,
 			},
 		},
 	)
@@ -58,22 +58,6 @@ func jsonCountersToJsonCards(counterTemplate *counters.CounterTemplate) (err err
 	}
 
 	return output.ToJSONFile(cards, Cli.Json.OutputPath)
-}
-
-func jsonToBackCounters(counterTemplate *counters.CounterTemplate) (err error) {
-	// JSON counters to Back Counters
-	finalCounters, err := transform.CountersToCounters(
-		&transform.CountersToCountersConfig{
-			OriginalCounterTemplate: counterTemplate,
-			OutputPathInTemplate:    Cli.Json.OutputDestination,
-			CounterBuilder:          &transform.StepLossBackCounterBuilder{},
-		},
-	)
-	if err != nil {
-		return errors.Wrap(err, "error trying to convert a counter template into another counter template")
-	}
-
-	return output.ToJSONFile(finalCounters, Cli.Json.OutputPath)
 }
 
 func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters.CounterTemplate, err error) {
@@ -93,7 +77,7 @@ func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters
 
 		for _, prototypeName := range names {
 			counter := counterTemplate.Prototypes[prototypeName]
-			log.Debug("creating counters from prototype", "prototype", prototypeName)
+			logger.Debug("creating counters from prototype", "prototype", prototypeName)
 
 			// You can prototype texts and images, so one of the two must be present, get their length
 			length := 0
@@ -103,7 +87,7 @@ func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters
 					return nil, errors.New("the number of images and texts prototypes must be the same")
 				}
 			} else if len(counter.ImagesPrototypes) > 0 && len(counter.ImagesPrototypes[0].PathList) > 0 {
-				length = len(counter.ImagesPrototypes)
+				length = len(counter.ImagesPrototypes[0].PathList)
 				if len(counter.TextsPrototypes) > 0 && len(counter.TextsPrototypes) != length {
 					return nil, errors.New("the number of images and texts prototypes must be the same")
 				}
@@ -148,7 +132,7 @@ func jsonPrototypeToJson(counterTemplate *counters.CounterTemplate) (t *counters
 		return counterTemplate, nil
 	}
 
-	log.Debug("no prototypes found in the counter template")
+	logger.Debug("no prototypes found in the counter template")
 
 	return counterTemplate, nil
 }
@@ -167,5 +151,5 @@ func jsonToJsonCardEvents(events []counters.Event) (err error) {
 			GeneratedImageName: Cli.Json.OutputPath,
 		},
 	)
-	return output.ToJSONFile(cardTemplate, Cli.Json.OutputDestination)
+	return output.ToJSONFile(cardTemplate, Cli.Json.Destination)
 }

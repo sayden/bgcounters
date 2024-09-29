@@ -102,12 +102,12 @@ func ReadCSVCounters(filepath string) (*counters.CounterTemplate, error) {
 
 	//TODO remove hardcoded data
 	template := counters.CounterTemplate{
-		Rows:                   7,
-		Columns:                7,
-		Mode:                   "template",
-		OutputFolder:           "/tmp",
-		Counters:               cnts,
-		IndexNumberForFilename: 3,
+		Rows:                         7,
+		Columns:                      7,
+		Mode:                         "template",
+		OutputFolder:                 "/tmp",
+		Counters:                     cnts,
+		PositionNumberForFilename: 3,
 	}
 
 	template.Settings.Width = 50

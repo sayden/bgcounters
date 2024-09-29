@@ -8,31 +8,49 @@
   "font_color": "black",
   "background_color": "#9e9a75",
   "mode": "template",
-  "output_folder": "generated/counters",
+  "output_folder": "../testdata/img",
   "draw_guides": false,
   "stroke_width": -1,
   "stroke_color": "black",
   "image_scaling": "fitWidth",
-  "index_number_for_filename": 3,
-  "font_path": "assets/font-bebas.ttf",
+  "font_path": "../assets/BebasNeue-Regular.ttf",
   "prototypes": {
-    "my_prototype": {
+    "both": {
       "text_prototypes": [
-        {
-          "position": 2,
-          "string_list": ["binoculars", "stripe"]
-        },
-        {
-          "position": 3,
-          "string_list": ["A", "B"]
-        }
+        { "position": 3, "string_list": ["both1", "both2"] },
+        { "position": 7, "string_list": ["1", "2"] }
       ],
       "image_prototypes": [
         {
-          "position": 1,
-          "path_list": ["assets/binoculars.png", "assets/stripe.jpg"]
+          "scale": 0.5,
+          "path_list": ["../assets/binoculars.png", "../assets/stripe.png"]
         }
       ]
+    },
+    "only_image": {
+      "text": [
+        { "position": 3, "string": "image" },
+        { "position": 7, "string": "A" }
+      ],
+      "image_prototypes": [
+        {
+          "scale": 0.5,
+          "path_list": ["../assets/binoculars.png", "../assets/stripe.png"]
+        }
+      ]
+    },
+    "only_text": {
+      "text_prototypes": [
+        {
+          "position": 11,
+          "string_list": ["text1", "text2"]
+        },
+        {
+          "position": 3,
+          "string_list": ["11", "22"]
+        }
+      ],
+      "image": [{ "scale": 0.5, "path": "../assets/binoculars.png" }]
     }
   }
 }

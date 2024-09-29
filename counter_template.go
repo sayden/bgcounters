@@ -19,8 +19,8 @@ type CounterTemplate struct {
 	DrawGuides   bool    `json:"draw_guides"`
 	Scaling      float64 `json:"scaling" default:"1.0"`
 
-	// 0-14 Specify an index number to use when writing a different file for each counter. Multiplier is ignored then
-	IndexNumberForFilename int `json:"index_number_for_filename,omitempty" default:"-1"`
+	// 0-16 Specify an position in the counter to use when writing a different file
+	PositionNumberForFilename int `json:"position_number_for_filename,omitempty"`
 
 	Counters []Counter `json:"counters"`
 

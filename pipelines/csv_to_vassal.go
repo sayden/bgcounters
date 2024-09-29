@@ -34,7 +34,7 @@ func CSVToVassalFile(cfg VassalConfig) error {
 	// Vassal mode forces individual rendering of counters
 	counterTemplate.Mode = counters.TEMPLATE_MODE_TEMPLATE
 	counterTemplate.OutputFolder = counters.BASE_FOLDER + "/images"
-	counterTemplate.IndexNumberForFilename = 3
+	counterTemplate.PositionNumberForFilename = 3
 
 	if err = output.CountersToPNG(counterTemplate); err != nil {
 		return err
