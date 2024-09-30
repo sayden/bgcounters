@@ -1,5 +1,5 @@
-The software uses a specific JSON format to read data and produce cards or counters. It can even use counters files to
-produce cards using the content of the counters.
+This software is a Cli tools that uses a specific JSON format to read data and produce cards or counters.
+It can even use counters files to produce cards using the content of the counters.
 
 # Settings
 
