@@ -4,6 +4,7 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
+	"golang.org/x/exp/slices"
 )
 
 func Merge(d *Settings, s2 Settings, opt ...func(*mergo.Config)) {
@@ -19,6 +20,11 @@ func Merge(d *Settings, s2 Settings, opt ...func(*mergo.Config)) {
 
 // DrawImagesOnCanvas using the provided height `h` and width `w`
 func DrawImagesOnCanvas(images []Image, s *Settings, areaCanvas *gg.Context, w, h int) error {
+	// sort the internal objects by position
+	slices.SortFunc(images, func(i, j Image) int {
+		return i.Position - j.Position
+	})
+
 	for _, image := range images {
 		Merge(&image.Settings, *s)
 
