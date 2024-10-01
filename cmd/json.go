@@ -15,7 +15,7 @@ import (
 type JsonOutput struct {
 	InputPath   string `help:"Input path of the file to read" short:"i" required:"true"`
 	OutputPath  string `help:"Path to the folder to write the JSON" short:"o"`
-	OutputType  string `help:"Type of content to produce: back-counters, cards, fow-counters, counters or events" short:"t"`
+	OutputType  string `help:"Type of content to produce: back-counters, cards, fow-counters, counters or events" short:"t" default:"back-counters"`
 	Destination string `help:"When generating a JSON Template, this contains the destination folder for images inside the template" short:"d"`
 
 	EventsPoolFile          string `help:"A file to take 'events' from"`
