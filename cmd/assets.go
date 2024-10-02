@@ -25,7 +25,7 @@ const (
 type AssetsOutput struct {
 	OutputType string `help:"InputContent to produce: counters, blocks or cards" required:"true" short:"t" default:"counters"`
 	InputPath  string `help:"Input path of the file to read. Be aware that some outputs requires specific inputs." short:"i" required:"true"`
-	OutputPath string `help:"Path to the folder to write the image(s)" short:"o" default:"./generated"`
+	OutputPath string `help:"Path to the folder to write the image(s)" short:"o"`
 
 	Tiled      bool   `help:"Write a sheet of 7x10 items per parge" default:"false"`
 	Individual bool   `help:"Write a file for each counter/card" default:"true"`
