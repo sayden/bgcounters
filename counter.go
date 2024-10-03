@@ -64,6 +64,14 @@ func (c *Counter) GetCounterFilename(position int, suffix string, filenumber int
 		if c.Extra.TitlePosition != nil && *c.Extra.TitlePosition != position {
 			name = c.GetTextInPosition(*c.Extra.TitlePosition)
 		}
+		if name != "" {
+			b.WriteString(name + " ")
+		}
+		// This way, the positional based name will always be the first part of the filename
+		// while the manual title will come later. This is useful when using prototypes so that
+		// counters with the same positional name are close together in the destination folder
+		// by "formation" (belonging) instead of by "use" (title)
+		name = ""
 
 		if c.Extra.Side != "" {
 			b.WriteString(c.Extra.Side)
