@@ -127,6 +127,7 @@ func generateNewCounterTemplate(outputPath string) error {
 			FontHeight:      10,
 			FontColorS:      "black",
 			BackgroundColor: "white",
+			ImageScaling:    "fitWidth",
 		},
 	}
 
