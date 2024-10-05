@@ -22,7 +22,7 @@ var Cli struct {
 	// Vassal is used to generate a Vassal module for testing purposes.
 	Vassal vassal `cmd:"" help:"Create a vassal module for testing. It searches for the 'template.xml' in the same folder"` //FIXME
 
-	New NewDefaultTemplates `cmd:"" help:"Generates a new counter template file with default values"`
+	GenerateTemplate GenerateTemplate `cmd:"" help:"Generates a new counter template file with default values"`
 }
 
 func main() {
@@ -38,11 +38,11 @@ func main() {
 	log.Info("Done")
 }
 
-type NewDefaultTemplates struct {
+type GenerateTemplate struct {
 	OutputPath string `help:"Path to the folder to write the JSON" short:"o"`
 }
 
-func (i *NewDefaultTemplates) Run(ctx *kong.Context) error {
+func (i *GenerateTemplate) Run(ctx *kong.Context) error {
 	if i.OutputPath == "" {
 		return errors.New("output path is required")
 	}
@@ -55,7 +55,7 @@ func (i *NewDefaultTemplates) Run(ctx *kong.Context) error {
 	return nil
 }
 
-func generateNewCounterTemplate(outputhPath string) error {
+func generateNewCounterTemplate(outputPath string) error {
 	counterTemplate := counters.CounterTemplate{
 		Counters: []counters.Counter{
 			{
@@ -130,10 +130,11 @@ func generateNewCounterTemplate(outputhPath string) error {
 		},
 	}
 
-	f, err := os.Create(outputhPath)
+	f, err := os.Create(outputPath)
 	if err != nil {
 		return errors.Wrap(err, "could not create output file")
 	}
+	defer f.Close()
 
 	enc := json.NewEncoder(f)
 	enc.SetIndent("", "  ")
