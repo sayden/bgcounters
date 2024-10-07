@@ -41,6 +41,10 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 		return errors.Wrap(err, "could not read input file")
 	}
 
+	if err := validateSchema(Cli.Json.InputPath); err != nil {
+		return err
+	}
+
 	switch inputContent {
 	case counters.FileContent_CSV:
 		switch Cli.Json.OutputType {

@@ -7,7 +7,6 @@ import (
 	"github.com/sayden/counters"
 	"github.com/sayden/counters/input"
 	"github.com/sayden/counters/output"
-	"github.com/thehivecorporation/log"
 )
 
 func jsonToCards() (err error) {
@@ -18,7 +17,7 @@ func jsonToCards() (err error) {
 
 	// Override output path with the one provided in the CLI
 	if Cli.Assets.OutputPath != "" {
-		log.WithField("output_path", Cli.Assets.OutputPath).Info("Overriding output path")
+		logger.Info("output_path", Cli.Assets.OutputPath, "Overriding output path")
 		cardsTemplate.OutputPath = Cli.Assets.OutputPath
 	}
 
@@ -26,6 +25,10 @@ func jsonToCards() (err error) {
 }
 
 func jsonToAsset(inputPath, outputPath string) (err error) {
+	if err := validateSchema(inputPath); err != nil {
+		return err
+	}
+
 	counterTemplate, err := input.ReadCounterTemplate(inputPath, outputPath)
 	if err != nil {
 		return errors.Wrap(err, "error reading counter template")
@@ -50,7 +53,7 @@ func jsonToAsset(inputPath, outputPath string) (err error) {
 
 	// Override output path with the one provided in the CLI
 	if outputPath != "" {
-		log.WithField("output_path", outputPath).Info("Overriding output path")
+		logger.Info("output_path", outputPath, "Overriding output path")
 		newTemplate.OutputFolder = outputPath
 	}
 
@@ -65,7 +68,7 @@ func jsonToBlock(blockBack string) (err error) {
 
 	// Override output path with the one provided in the CLI
 	if Cli.Assets.OutputPath != "" {
-		log.WithField("output_path", Cli.Assets.OutputPath).Info("Overriding output path")
+		logger.Info("output_path", Cli.Assets.OutputPath, "Overriding output path")
 		counterTemplate.OutputFolder = Cli.Assets.OutputPath
 	}
 
