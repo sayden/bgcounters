@@ -17,7 +17,7 @@ func jsonToCards() (err error) {
 
 	// Override output path with the one provided in the CLI
 	if Cli.Assets.OutputPath != "" {
-		logger.Info("output_path", Cli.Assets.OutputPath, "Overriding output path")
+		logger.Info("Overriding output path", "output_path", Cli.Assets.OutputPath)
 		cardsTemplate.OutputPath = Cli.Assets.OutputPath
 	}
 
@@ -26,7 +26,7 @@ func jsonToCards() (err error) {
 
 func jsonToAsset(inputPath, outputPath string) (err error) {
 	if err := validateSchema(inputPath); err != nil {
-		return err
+		return errors.Wrap(err, "schema validation failed during jsonToAsset")
 	}
 
 	counterTemplate, err := input.ReadCounterTemplate(inputPath, outputPath)
@@ -53,7 +53,7 @@ func jsonToAsset(inputPath, outputPath string) (err error) {
 
 	// Override output path with the one provided in the CLI
 	if outputPath != "" {
-		logger.Info("output_path", outputPath, "Overriding output path")
+		logger.Info("Overriding output path", "output_path", outputPath)
 		newTemplate.OutputFolder = outputPath
 	}
 

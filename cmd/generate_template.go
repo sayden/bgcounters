@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	"github.com/alecthomas/kong"
 	"github.com/invopop/jsonschema"
@@ -12,7 +13,7 @@ import (
 )
 
 type GenerateTemplate struct {
-	OutputPath string `help:"Path to the folder to write the JSON" short:"o"`
+	OutputPath string `help:"Path to the JSON output file" short:"o"`
 }
 
 func (i *GenerateTemplate) Run(ctx *kong.Context) error {
@@ -104,6 +105,11 @@ func generateNewCounterTemplate(outputPath string) error {
 		},
 	}
 
+	err := os.MkdirAll(filepath.Dir(outputPath), os.ModePerm)
+	if err != nil {
+		return errors.Wrap(err, "could not create output directories")
+	}
+
 	f, err := os.Create(outputPath)
 	if err != nil {
 		return errors.Wrap(err, "could not create output file")
@@ -137,7 +143,7 @@ func validateSchema(inputPath string) error {
 		for _, desc := range result.Errors() {
 			logger.Errorf("- %s", desc)
 		}
-		return errors.New("error validating schema")
+		return errors.Wrap(err, "JSON file is not valid")
 	} else {
 		logger.Debug("JSON file is valid")
 	}
