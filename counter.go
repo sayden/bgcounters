@@ -108,13 +108,6 @@ func (c *Counter) GetCounterFilename(position int, suffix string, filenumber int
 	return res
 }
 
-type CounterPrototype struct {
-	Counter
-
-	ImagesPrototypes []ImagePrototype `json:"image_prototypes,omitempty"`
-	TextsPrototypes  []TextPrototype  `json:"text_prototypes,omitempty"`
-}
-
 func applyCounterScaling(c *Counter, scaling float64) {
 	for i := range c.Images {
 		applyImageScaling(&c.Images[i], scaling)

@@ -14,7 +14,7 @@ type Image struct {
 	Settings
 	Positioner
 
-	Path          string  `json:"path"`
+	Path          string  `json:"path,omitempty"`
 	Scale         float64 `json:"scale,omitempty" default:"1"`
 	AvoidCropping bool    `json:"avoid_cropping,omitempty"`
 }
@@ -81,12 +81,6 @@ func (i *Image) Draw(dc *gg.Context, pos int, _ Settings) error {
 	dc.DrawImageAnchored(img, int(x), int(y), ax, ay)
 
 	return nil
-}
-
-type ImagePrototype struct {
-	Image
-
-	PathList []string `json:"path_list"`
 }
 
 func getShadowFromImage(img image.Image, shadowDistance int, sigma int) image.Image {

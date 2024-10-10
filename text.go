@@ -13,7 +13,7 @@ type Text struct {
 	Settings
 	Positioner
 
-	String string `json:"string"`
+	String string `json:"string,omitempty"`
 
 	Underline bool `json:"underline,omitempty"`
 }
@@ -126,12 +126,6 @@ func (t *Text) getTextDimensions(pos int, def Settings) (float64, float64, float
 	}
 
 	return x, y, ax, ay, maxWidth, nil
-}
-
-type TextPrototype struct {
-	Text
-
-	StringList []string `json:"string_list"`
 }
 
 // TODO remove if not used

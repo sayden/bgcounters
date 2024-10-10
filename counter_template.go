@@ -11,18 +11,18 @@ import (
 
 type CounterTemplate struct {
 	Settings
-	Rows    int `json:"rows,omitempty" default:"2"`
-	Columns int `json:"columns,omitempty" default:"2"`
+	Rows    int `json:"rows,omitempty" default:"2" jsonschema_description:"Number of rows, required when creating tiled based sheets for printing or TTS"`
+	Columns int `json:"columns,omitempty" default:"2" jsonschema_description:"Number of columns, required when creating tiled based sheets for printing or TTS"`
 
 	Mode         string  `json:"mode"`
 	OutputFolder string  `json:"output_folder" default:"output"`
-	DrawGuides   bool    `json:"draw_guides"`
-	Scaling      float64 `json:"scaling" default:"1.0"`
+	DrawGuides   bool    `json:"draw_guides,omitempty"`
+	Scaling      float64 `json:"scaling,omitempty" default:"1.0"`
 
 	// 0-16 Specify an position in the counter to use when writing a different file
 	PositionNumberForFilename int `json:"position_number_for_filename,omitempty"`
 
-	Counters []Counter `json:"counters"`
+	Counters []Counter `json:"counters,omitempty"`
 
 	Prototypes map[string]CounterPrototype `json:"prototypes,omitempty"`
 }

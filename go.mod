@@ -13,16 +13,21 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/fogleman/gg v1.3.0
 	github.com/imdario/mergo v0.3.11
+	github.com/invopop/jsonschema v0.12.0
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494
+	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.9.0
 	github.com/thehivecorporation/log v1.8.5
+	github.com/xeipuuv/gojsonschema v1.2.0
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6
 )
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
+	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/charmbracelet/lipgloss v0.13.0 // indirect
 	github.com/charmbracelet/x/ansi v0.2.3 // indirect
@@ -34,6 +39,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/juju/errors v0.0.0-20210818161939-5560c4c073ff // indirect
 	github.com/kr/pretty v0.3.0 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
@@ -43,7 +49,9 @@ require (
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
+	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
+	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
+	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/text v0.3.8 // indirect
