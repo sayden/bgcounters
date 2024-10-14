@@ -1,4 +1,4 @@
-package main
+package transform
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func TestJSONPrototypes(t *testing.T) {
 	newTempl, err := counters.ParseTemplate(byt)
 	assert.NoError(t, err)
 
-	newTempl, err = jsonPrototypeToJson(newTempl)
+	newTempl, err = JsonPrototypeToJson(newTempl)
 	assert.NoError(t, err)
 
 	// check the new template

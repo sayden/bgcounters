@@ -2,11 +2,14 @@ package counters
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/creasty/defaults"
+	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
-	"github.com/thehivecorporation/log"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 type CounterTemplate struct {
@@ -47,7 +50,7 @@ func ParseTemplate(byt []byte) (t *CounterTemplate, err error) {
 	}
 
 	if err = json.Unmarshal(byt, &t); err != nil {
-		log.WithField("incoming_data", string(byt)).Error("could not parse JSON into a counter template")
+		log.Error("could not parse JSON into a counter template", "incoming_data", string(byt))
 		return nil, err
 	}
 
@@ -100,4 +103,29 @@ func ApplyCounterWaterfallSettings(t *CounterTemplate) {
 			}
 		}
 	}
+}
+
+func ValidateSchemaBytes(byt []byte) error {
+	r := new(jsonschema.Reflector)
+	counterTemplateSchemaMarshaller := r.Reflect(&CounterTemplate{})
+	byt, err := counterTemplateSchemaMarshaller.MarshalJSON()
+	if err != nil {
+		return errors.Wrap(err, "could not marshal counter template schema")
+	}
+
+	schema := gojsonschema.NewBytesLoader(byt)
+	documentLoader := gojsonschema.NewBytesLoader(byt)
+	result, err := gojsonschema.Validate(schema, documentLoader)
+	if err != nil {
+		return errors.Wrap(err, "could not validate JSON file")
+	}
+
+	if !result.Valid() {
+		for _, schemaErr := range result.Errors() {
+			log.Error("ValidateSchema", "error", schemaErr.String())
+		}
+		return fmt.Errorf("JSON file is not valid")
+	}
+
+	return nil
 }

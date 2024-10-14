@@ -99,7 +99,6 @@ func generateNewCounterTemplate(outputPath string) error {
 			Width:           100,
 			Height:          100,
 			Margins:         3,
-			FontHeight:      10,
 			FontColorS:      "black",
 			BackgroundColor: "white",
 			ImageScaling:    "fitWidth",
@@ -122,7 +121,7 @@ func generateNewCounterTemplate(outputPath string) error {
 	return enc.Encode(counterTemplate)
 }
 
-func validateSchema(inputPath string) error {
+func validateSchemaAtPath(inputPath string) error {
 	logger.Info("Validating JSON file")
 
 	r := new(jsonschema.Reflector)
@@ -142,7 +141,7 @@ func validateSchema(inputPath string) error {
 	if !result.Valid() {
 		logger.Error("The document is not valid. see errors: ")
 		for _, desc := range result.Errors() {
-			logger.Errorf("- %s", desc)
+			logger.Errorf("- %v", desc)
 		}
 		return errors.Wrap(err, "JSON file is not valid")
 	} else {
