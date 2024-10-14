@@ -1,12 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-
 	"github.com/pkg/errors"
 	"github.com/sayden/counters"
 	"github.com/sayden/counters/input"
 	"github.com/sayden/counters/output"
+	"github.com/sayden/counters/transform"
 )
 
 func jsonToCards() (err error) {
@@ -25,7 +24,7 @@ func jsonToCards() (err error) {
 }
 
 func jsonToAsset(inputPath, outputPath string) (err error) {
-	if err := validateSchema(inputPath); err != nil {
+	if err := validateSchemaAtPath(inputPath); err != nil {
 		return errors.Wrap(err, "schema validation failed during jsonToAsset")
 	}
 
@@ -34,21 +33,9 @@ func jsonToAsset(inputPath, outputPath string) (err error) {
 		return errors.Wrap(err, "error reading counter template")
 	}
 
-	// JSON counters to Counters
-	newTemplate, err := jsonPrototypeToJson(counterTemplate)
+	newTemplate, err := transform.ParsePrototypedTemplate(counterTemplate)
 	if err != nil {
-		return errors.Wrap(err, "error trying to convert a counter template into another counter template")
-	}
-	newTemplate.Scaling = 1
-
-	byt, err := json.Marshal(newTemplate)
-	if err != nil {
-		return err
-	}
-
-	newTemplate, err = counters.ParseTemplate(byt)
-	if err != nil {
-		return errors.Wrap(err, "could not parse JSON file")
+		return errors.Wrap(err, "error parsing prototyped template")
 	}
 
 	// Override output path with the one provided in the CLI
