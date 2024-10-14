@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Counter visualizer</title>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="main.css" type="text/css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/lint/json-lint.min.js"
+      integrity="sha512-40xVcCik6TlUiZadnRc6ZM0BN65s7F+C3K7eBqGRf8dmjKApjzoiT/GB1GJmdICOZbXjJCiTBbVlsIvFs8A/+Q=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+  <body>
+    <header class="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+      <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <div
+          class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-white">
+              Blog Posts
+            </h1>
+
+            <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Iure,
+              recusandae.
+            </p>
+          </div>
+
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- Content -->
+    <main>
+      <div class="flex flex-row justify-center">
+        <div class="basis-1/4">left</div>
+        <div class="basis-1/4">right</div>
+      </div>
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
+        <div class="h-32 bg-zinc-900 p-5">
+          <label class="block text-xs font-medium text-slate-50">
+            Working directory
+          </label>
+
+          <input
+            type="text"
+            id="cwd"
+            value="/home/mcastro/projects/prototypes/ukraine"
+    class="mt-1 w-full border-gray-200 shadow-sm sm:text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+        </div>
+        <div class="flex h-32 bg-zinc-900 p-5 justify-center">
+          <img id="image" alt="image" />
+        </div>
+      </div>
+      <textarea
+          class="all: revert;"
+          id="counter"
+          name="counter"
+          hx-post="/counter"
+          hx-target="#result"
+          hx-trigger="keyup changed delay:500ms"
+        ></textarea>
+
+    </main>
+
+    <script>
+      var editor = CodeMirror.fromTextArea(document.getElementById("counter"), {
+        lineNumbers: true,
+        mode: "javascript",
+        theme: "default",
+      });
+
+      var timeout = null;
+      editor.on("change", function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+          const rawValue = editor.getValue();
+          const content = JSON.parse(rawValue);
+
+          const response = fetch("/counter", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "Cache-Control": "no-cache",
+            },
+            body: JSON.stringify({
+              cwd: document.getElementById("cwd").value,
+              counter: content,
+            }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.blob();
+            })
+            .then((blob) => {
+              const imageUrl = URL.createObjectURL(blob);
+              console.log("Image URL:", imageUrl);
+              const img = document.createElement("img");
+              img.src = imageUrl;
+              img.id = "image";
+              document.getElementById("image").replaceWith(img);
+            })
+            .catch((e) => console.error("Error:", e));
+        }, 500);
+      });
+    </script>
+  </body>
+</html>

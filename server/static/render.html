@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Counter visualizer</title>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="main.css" type="text/css" />
+  </head>
+  <body>
+    <img id="image" src="img.png" alt="image" />
+    <!-- <ul id="list"></ul> -->
+    <script type="text/javascript">
+      console.log("Script");
+      const list = document.getElementById("list");
+
+      let eventSource = new EventSource("/listen");
+      let myLocation = location;
+
+      eventSource.onmessage = (event) => {
+        console.log("Data");
+        console.log(event);
+
+        // const li = document.createElement("li");
+        // li.textContent = `message: ${event.data}`;
+        //
+        // list.appendChild(li);
+        myLocation.reload();
+
+        // if (event.data === "data: hello") {
+        //   console.log(event);
+        //   return;
+        // }
+        //
+        // const imageUrl = URL.createObjectURL(event.data);
+        // const img = document.createElement("img");
+        // img.src = imageUrl;
+        // img.id = "image";
+        // document.getElementById("image").replaceWith(img);
+      };
+    </script>
+  </body>
+</html>

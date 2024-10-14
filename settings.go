@@ -12,7 +12,7 @@ type Settings struct {
 	Margins float64 `json:"margins,omitempty"`
 
 	FontHeight float64 `json:"font_height,omitempty"`
-	FontPath   string  `json:"font_path,omitempty" default:"BebasNeue-Regular.ttf"`
+	FontPath   string  `json:"font_path,omitempty" default:"assets/font-bebas.ttf"`
 
 	FontColorS string      `json:"font_color,omitempty" default:"black"`
 	FontColor  color.Color `json:"-"`

@@ -30,7 +30,7 @@ iteration:
 
 			counter := frontTemplate.Counters[counterPos]
 
-			counterCanvas, err := getCounterCanvas(&counter, frontTemplate)
+			counterCanvas, err := GetCounterCanvas(&counter, frontTemplate)
 			if err != nil {
 				return err
 			}
@@ -42,7 +42,7 @@ iteration:
 
 			if backTemplate != nil {
 				backCounter := backTemplate.Counters[counterPos]
-				backCounterCanvas, err := getCounterCanvas(&backCounter, backTemplate)
+				backCounterCanvas, err := GetCounterCanvas(&backCounter, backTemplate)
 				if err != nil {
 					return err
 				}
@@ -108,12 +108,14 @@ func getBlockCanvasFromCounterCanvas(counterCanvas *gg.Context, cc *counters.Cou
 	return dc, nil
 }
 
-func getCounterCanvas(counter *counters.Counter, template *counters.CounterTemplate) (*gg.Context, error) {
-	dc := GetCanvasForCounter(counter, template)
+func GetCounterCanvas(counter *counters.Counter, template *counters.CounterTemplate) (*gg.Context, error) {
+	dc, err := GetCanvasForCounter(counter, template)
+	if err != nil {
+		return nil, err
+	}
 
 	// Draw background image
-	err := drawBackgroundImage(dc, counter.Settings)
-	if err != nil {
+	if err = drawBackgroundImage(dc, counter.Settings); err != nil {
 		return nil, errors.Wrap(err, "error trying to draw background image")
 	}
 

@@ -26,3 +26,11 @@ bgg_cards/generated
 
 bgg_market/bgg_market
 *.exe
+
+server/node_modules
+server/package-lock.json
+server/static/main.css
+server/static/img.png
+server/tmp
+
+.vscode

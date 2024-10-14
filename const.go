@@ -47,7 +47,7 @@ const (
 	VassalInputXmlFile  = "template.xml"
 	VassalOutputXmlFile = BASE_FOLDER + "/buildFile.xml"
 
-	DEFAULT_FONT_PATH = "assets/BebasNeue-Regular.ttf"
+	DEFAULT_FONT_PATH = "assets/font-bebas.ttf"
 )
 
 type FileContent int

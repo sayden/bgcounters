@@ -59,7 +59,7 @@ func (m *model) View() string {
 		pad + m.progress.ViewAs(m.percent) + "\n\n"
 }
 
-type globalState struct {
+type GlobalState struct {
 	counterPos     int
 	row            int
 	columns        int
@@ -69,8 +69,8 @@ type globalState struct {
 	canvas         *gg.Context
 }
 
-func newGlobalState(template *counters.CounterTemplate, canvas *gg.Context) *globalState {
-	return &globalState{
+func newGlobalState(template *counters.CounterTemplate, canvas *gg.Context) *GlobalState {
+	return &GlobalState{
 		filenamesInUse: make(map[string]bool),
 		fileNumber:     1,
 		canvas:         canvas,
@@ -125,12 +125,11 @@ iteration:
 				continue
 			}
 
-			counterCanvas, err := getCounterCanvas(&counter, template)
+			counterCanvas, err := GetCounterCanvas(&counter, template)
 			if err != nil {
 				return err
 			}
 
-			// err = writeCounterToFile(counterCanvas, counter, template, &fileNumber, &columns, &row, canvas)
 			err = writeCounterToFile(counterCanvas, counter, gs)
 			if err != nil {
 				return err
@@ -160,7 +159,7 @@ type imageWriter struct {
 	template *counters.CounterTemplate
 }
 
-func writeCounterToFile(dc *gg.Context, counter counters.Counter, gs *globalState) error {
+func writeCounterToFile(dc *gg.Context, counter counters.Counter, gs *GlobalState) error {
 	iw := imageWriter{
 		dc:       dc,
 		template: gs.template,
@@ -196,45 +195,9 @@ func writeCounterToFile(dc *gg.Context, counter counters.Counter, gs *globalStat
 	return nil
 }
 
-// func writeCounterToFile(dc *gg.Context, counter counters.Counter, template *counters.CounterTemplate, fileNumber *int, columns, row *int, canvas *gg.Context) error {
-// 	iw := imageWriter{
-// 		dc:       dc,
-// 		template: template,
-// 	}
-// 	var suffix string
-// 	if counter.Back != nil {
-// 		suffix = "-front"
-// 	}
-//
-// 	switch template.Mode {
-// 	case counters.TEMPLATE_MODE_TEMPLATE:
-// 		err := iw.createFile(&counter, fileNumber, suffix)
-// 		if err != nil {
-// 			return errors.Wrap(err, "error trying to write counter file")
-// 		}
-//
-// 		if counter.Back != nil {
-// 			suffix = "-back"
-// 			if err = iw.createFile(counter.Back, fileNumber, suffix); err != nil {
-// 				return errors.Wrap(err, "error trying to write counter file")
-// 			}
-// 			*fileNumber++
-// 		}
-// 	case counters.TEMPLATE_MODE_TILES:
-// 		if counter.Back != nil {
-// 			iw.createTiledFile(counter.Back, columns, row, canvas)
-// 		}
-// 		iw.createTiledFile(&counter, columns, row, canvas)
-// 	default:
-// 		return errors.New("unknown template mode or template mode is empty")
-// 	}
-//
-// 	return nil
-// }
-
 // createFile creates a file with the counter image. Filenumber is the filename, a pointer is passed to be able to use
 // the multiplier to create more than one file with the same counter
-func (iw *imageWriter) createFile(counter *counters.Counter, gs *globalState, suffix string) error {
+func (iw *imageWriter) createFile(counter *counters.Counter, gs *GlobalState, suffix string) error {
 	_ = os.MkdirAll(iw.template.OutputFolder, 0750)
 
 	if counter.Multiplier == 0 {
@@ -260,34 +223,9 @@ func (iw *imageWriter) createFile(counter *counters.Counter, gs *globalState, su
 	return nil
 }
 
-// func (iw *imageWriter) createFile(counter *counters.Counter, fileNumber *int, suffix string) error {
-// 	_ = os.MkdirAll(iw.template.OutputFolder, 0750)
-//
-// 	if counter.Multiplier == 0 {
-// 		counter.Multiplier = 1
-// 	}
-//
-// 	// Use sequencing of numbers or a position in the counter texts to name files
-// 	for i := 0; i < counter.Multiplier; i++ {
-// 		counterFilename := counter.GetCounterFilename(iw.template.PositionNumberForFilename, *fileNumber, suffix)
-// 		filepath := path.Join(iw.template.OutputFolder, counterFilename)
-// 		if counter.Skip {
-// 			continue
-// 		}
-//
-// 		if err := iw.dc.SavePNG(filepath); err != nil {
-// 			log.WithField("file", filepath).Error("could not save PNG file")
-// 			return err
-// 		}
-// 		*fileNumber++
-// 	}
-//
-// 	return nil
-// }
-
 // createTiledFile creates a file with the counter image. Filenumber is the filename, a row and column pointer
 // is passed to be able to use the multiplier to create more than one counter in the same sheet
-func (iw *imageWriter) createTiledFile(counter *counters.Counter, gs *globalState) {
+func (iw *imageWriter) createTiledFile(counter *counters.Counter, gs *GlobalState) {
 	for i := 0; i < counter.Multiplier; i++ {
 		gs.canvas.DrawImage(iw.dc.Image(), gs.columns*counter.Width, gs.row*counter.Height)
 		gs.columns++
@@ -299,23 +237,12 @@ func (iw *imageWriter) createTiledFile(counter *counters.Counter, gs *globalStat
 	gs.columns--
 }
 
-// func (iw *imageWriter) createTiledFile(counter *counters.Counter, columns, row *int, canvas *gg.Context) {
-// 	for i := 0; i < counter.Multiplier; i++ {
-// 		canvas.DrawImage(iw.dc.Image(), *columns*counter.Width, *row*counter.Height)
-// 		*columns++
-// 		if *columns == iw.template.Columns {
-// 			*columns = 0
-// 			*row++
-// 		}
-// 	}
-// 	*columns--
-// }
-
 // GetCanvasForCounter creates a canvas for a counter definition.
-func GetCanvasForCounter(cc *counters.Counter, t *counters.CounterTemplate) *gg.Context {
+func GetCanvasForCounter(cc *counters.Counter, t *counters.CounterTemplate) (*gg.Context, error) {
 	dc := gg.NewContext(cc.Width, cc.Height)
 	if err := dc.LoadFontFace(cc.FontPath, cc.FontHeight); err != nil {
-		log.WithFields(log.Fields{"font": cc.FontPath, "height": cc.FontHeight}).Fatal(err)
+		log.WithFields(log.Fields{"font": "'" + cc.FontPath + "'", "height": cc.FontHeight}).Error(err)
+		return nil, err
 	}
 
 	dc.Push()
@@ -328,5 +255,5 @@ func GetCanvasForCounter(cc *counters.Counter, t *counters.CounterTemplate) *gg.
 		counters.GetValidColorForString(cc.FontColorS, t.BgColor)
 	}
 
-	return dc
+	return dc, nil
 }

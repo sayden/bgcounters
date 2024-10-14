@@ -95,6 +95,7 @@ func generateNewCounterTemplate(outputPath string) error {
 		},
 		Settings: counters.Settings{
 			FontPath:        "BebasNeue-Regular.ttf",
+			FontHeight:      10,
 			Width:           100,
 			Height:          100,
 			Margins:         3,
