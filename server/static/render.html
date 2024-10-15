@@ -174,9 +174,26 @@
         </div>
       </div>
     </nav>
-    <div class="grid grid-cols-8 grid-flow-row p-2" id="grid">
-      <!-- <img class="mx-auto p-4" id="image" src="img.png" alt="image" /> -->
+    <div class="flex flex-row p-2">
+      <input
+        class="basis-1/4 w-full p-2 rounded-sm border-gray-200 shadow-sm sm:text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+        type="text"
+        id="WorkingDirectory"
+        name="update-wd"
+        placeholder="working-directory/"
+      >
+      </input>
+      <a
+        class="basis-1/8 p-2 rounded bg-indigo-600 px-8 text-sm font-medium text-white transition hover:rotate-2 hover:scale-110 focus:outline-none focus:ring active:bg-indigo-500"
+        href="#"
+        hx-post="/wd"
+        hx-include="#WorkingDirectory"
+        hx-swap="none"
+      >
+        Update WD
+      </a>
     </div>
+    <div class="grid grid-cols-8 grid-flow-row p-2" id="grid"></div>
 
     <script type="text/javascript">
       function replaceOrCreateImage(id, imgData, alt, className) {
