@@ -26,6 +26,6 @@ func TestJSONPrototypes(t *testing.T) {
 	assert.NoError(t, err)
 
 	// check the new template
-	assert.Equal(t, 2, len(newTempl.Counters))
-	assert.Equal(t, 1, len(newTempl.Counters[0].Texts))
+	assert.Equal(t, 6, len(newTempl.Counters))
+	assert.Equal(t, 2, len(newTempl.Counters[0].Texts))
 }
