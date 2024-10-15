@@ -41,7 +41,7 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 		return errors.Wrap(err, "could not read input file")
 	}
 
-	if err := validateSchemaAtPath(Cli.Json.InputPath); err != nil {
+	if err := counters.ValidateSchemaAtPath(Cli.Json.InputPath); err != nil {
 		return err
 	}
 

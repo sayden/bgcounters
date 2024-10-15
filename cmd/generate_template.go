@@ -6,10 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/kong"
-	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
 	"github.com/sayden/counters"
-	"github.com/xeipuuv/gojsonschema"
 )
 
 type GenerateTemplate struct {
@@ -119,34 +117,4 @@ func generateNewCounterTemplate(outputPath string) error {
 	enc := json.NewEncoder(f)
 	enc.SetIndent("", "  ")
 	return enc.Encode(counterTemplate)
-}
-
-func validateSchemaAtPath(inputPath string) error {
-	logger.Info("Validating JSON file")
-
-	r := new(jsonschema.Reflector)
-	counterTemplateSchemaMarshaller := r.Reflect(&counters.CounterTemplate{})
-	byt, err := counterTemplateSchemaMarshaller.MarshalJSON()
-	if err != nil {
-		return errors.Wrap(err, "could not marshal counter template schema")
-	}
-
-	schema := gojsonschema.NewBytesLoader(byt)
-	documentLoader := gojsonschema.NewReferenceLoader("file://" + inputPath)
-	result, err := gojsonschema.Validate(schema, documentLoader)
-	if err != nil {
-		return errors.Wrap(err, "could not validate JSON file")
-	}
-
-	if !result.Valid() {
-		logger.Error("The document is not valid. see errors: ")
-		for _, desc := range result.Errors() {
-			logger.Errorf("- %v", desc)
-		}
-		return errors.Wrap(err, "JSON file is not valid")
-	} else {
-		logger.Debug("JSON file is valid")
-	}
-
-	return nil
 }

@@ -24,7 +24,7 @@ func jsonToCards() (err error) {
 }
 
 func jsonToAsset(inputPath, outputPath string) (err error) {
-	if err := validateSchemaAtPath(inputPath); err != nil {
+	if err := counters.ValidateSchemaAtPath(inputPath); err != nil {
 		return errors.Wrap(err, "schema validation failed during jsonToAsset")
 	}
 

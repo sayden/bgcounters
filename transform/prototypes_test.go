@@ -1,7 +1,6 @@
 package transform
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -12,8 +11,7 @@ import (
 
 func TestJSONPrototypes(t *testing.T) {
 	// read the json file with testing data
-	// filepath := "../testdata/prototype.json"
-	filepath := "../../prototypes/ukraine/json/counters/markers/front.json"
+	filepath := "../testdata/prototype.json"
 	f, err := os.Open(filepath)
 	assert.NoError(t, err)
 	defer f.Close()
@@ -24,11 +22,10 @@ func TestJSONPrototypes(t *testing.T) {
 	newTempl, err := counters.ParseTemplate(byt)
 	assert.NoError(t, err)
 
-	newTempl, err = JsonPrototypeToJson(newTempl)
+	newTempl, err = JsonPrototypeToTemplate(newTempl)
 	assert.NoError(t, err)
 
 	// check the new template
 	assert.Equal(t, 2, len(newTempl.Counters))
 	assert.Equal(t, 1, len(newTempl.Counters[0].Texts))
-	fmt.Printf("%+v\n", newTempl.Counters[0].Texts)
 }

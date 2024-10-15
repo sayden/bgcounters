@@ -129,3 +129,28 @@ func ValidateSchemaBytes(byt []byte) error {
 
 	return nil
 }
+
+func ValidateSchemaAtPath(inputPath string) error {
+	r := new(jsonschema.Reflector)
+	counterTemplateSchemaMarshaller := r.Reflect(&CounterTemplate{})
+	byt, err := counterTemplateSchemaMarshaller.MarshalJSON()
+	if err != nil {
+		return errors.Wrap(err, "could not marshal counter template schema")
+	}
+
+	schema := gojsonschema.NewBytesLoader(byt)
+	documentLoader := gojsonschema.NewReferenceLoader("file://" + inputPath)
+	result, err := gojsonschema.Validate(schema, documentLoader)
+	if err != nil {
+		return errors.Wrap(err, "could not validate JSON file")
+	}
+
+	if !result.Valid() {
+		for _, desc := range result.Errors() {
+			log.Errorf("- %v", desc)
+		}
+		return errors.Wrap(err, "JSON file is not valid")
+	}
+
+	return nil
+}
