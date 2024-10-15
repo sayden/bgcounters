@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,13 @@ type bodyInput struct {
 	Cwd             string                   `json:"cwd"`
 	CounterTemplate counters.CounterTemplate `json:"counter"`
 }
+
+type wdMutex struct {
+	sync.Mutex
+	wd string
+}
+
+var wd = wdMutex{wd: "~/projects/prototypes/ukraine"}
 
 func main() {
 	log.SetLevel(log.DebugLevel)
@@ -41,6 +49,14 @@ func main() {
 	router.POST("/code", handlerCode(ch))
 	router.GET("/render", func(c *gin.Context) { c.HTML(http.StatusOK, "render.html", nil) })
 	router.Any("/listen", handlerListen(ch))
+	router.POST("/wd", func(c *gin.Context) {
+		wd.Lock()
+		defer wd.Unlock()
+
+		newWd := c.PostForm("update-wd")
+
+		wd.wd = newWd
+	})
 
 	// Create a custom HTTP server
 	server := &http.Server{
@@ -130,7 +146,13 @@ func handlerCode(ch chan<- *response) func(c *gin.Context) {
 		wc := base64.NewEncoder(base64.StdEncoding, buf)
 		defer wc.Close()
 
-		response, err := generateCounter(byt, "/home/mcastro/projects/prototypes/ukraine")
+		// FIXME: WD can not be captured in the request body because the content of the request
+		// is a counter template in JSON format. Maybe write it down using a global variable with
+		// a lock and an endpoint to update that variable using a request from the client via AJAX
+		wd.Lock()
+		defer wd.Unlock()
+		log.Info("wd", "wd", os.ExpandEnv(wd.wd))
+		response, err := generateCounter(byt, os.ExpandEnv(wd.wd))
 		if err != nil {
 			log.Error(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
