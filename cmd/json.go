@@ -41,7 +41,7 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 		return errors.Wrap(err, "could not read input file")
 	}
 
-	if err := validateSchema(Cli.Json.InputPath); err != nil {
+	if err := validateSchemaAtPath(Cli.Json.InputPath); err != nil {
 		return err
 	}
 
@@ -78,7 +78,7 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 		switch Cli.Json.OutputType {
 		case "counters":
 			// JSON counters to Counters
-			newTempl, err := transform.JsonPrototypeToJson(counterTemplate)
+			newTempl, err := transform.JsonPrototypeToTemplate(counterTemplate)
 			if err != nil {
 				return errors.Wrap(err, "error trying to convert a counter template into another counter template")
 			}
@@ -86,7 +86,7 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 
 		case "back-counters":
 			// JSON counters to Counters
-			newTempl, err := transform.JsonPrototypeToJson(counterTemplate)
+			newTempl, err := transform.JsonPrototypeToTemplate(counterTemplate)
 			if err != nil {
 				return errors.Wrap(err, "error trying to convert a counter template into another counter template")
 			}
