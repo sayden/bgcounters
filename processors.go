@@ -45,8 +45,8 @@ func DrawTextsOnCanvas(texts []Text, s Settings, areaCanvas *gg.Context, w, h in
 	for _, text := range texts {
 		Merge(&text.Settings, s)
 
-		text.SetWidth(w)
-		text.SetHeight(h)
+		text.Width = w
+		text.Height = h
 		text.Draw(areaCanvas, text.Position, text.Settings)
 	}
 }

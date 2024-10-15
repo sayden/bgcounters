@@ -1,6 +1,7 @@
 package counters
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/danielgtaylor/unistyle"
@@ -16,22 +17,9 @@ type Text struct {
 	String string `json:"string,omitempty"`
 
 	Underline bool `json:"underline,omitempty"`
-}
 
-func (t *Text) SetWidth(w int) {
-	t.Width = w
-}
-
-func (t *Text) SetHeight(h int) {
-	t.Height = h
-}
-
-func (t *Text) GetPosition() int {
-	return t.Position
-}
-
-func (t *Text) GetSettings() Settings {
-	return t.Settings
+	TextBackgroundColor string      `json:"text_background_color,omitempty"`
+	TextBgColor         color.Color `json:"-"`
 }
 
 func (t *Text) GetAlignment() gg.Align {
@@ -52,7 +40,7 @@ func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
 	// Font and font color
 	err := dc.LoadFontFace(settings.FontPath, settings.FontHeight)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not load font face '%s' with heigth '%f': %w", settings.FontPath, settings.FontHeight, err)
 	}
 	dc.SetColor(settings.FontColor)
 
@@ -107,6 +95,21 @@ func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
 		x1 := int(x)
 		dc.DrawImageAnchored(shadowCtx.Image(), x1, y1, ax, ay)
 		return nil
+	}
+
+	if t.TextBackgroundColor != "" {
+		bgTemp := gg.NewContext(img.Bounds().Dx()+int(settings.FontHeight*0.40), img.Bounds().Dy()+int(settings.FontHeight*0.40))
+		bgTemp.Push()
+		bgTemp.SetColor(GetValidColorForString(t.TextBackgroundColor, t.TextBgColor))
+		bgTemp.DrawRectangle(0, 0, float64(dc.Width()), float64(dc.Height()))
+		bgTemp.Fill()
+		bgTemp.Pop()
+
+		if err != nil {
+			return errors.Wrap(err, "could not get dimensions to draw")
+		}
+		bgTemp.DrawImageAnchored(img, int(settings.FontHeight*0.40/2), int(settings.FontHeight*0.40/2), 0, 0)
+		img = bgTemp.Image()
 	}
 
 	dc.DrawImageAnchored(img, int(x), int(y), ax, ay)
