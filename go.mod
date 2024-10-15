@@ -1,8 +1,6 @@
 module github.com/sayden/counters
 
-go 1.22.0
-
-toolchain go1.23.1
+go 1.23
 
 require (
 	github.com/alecthomas/kong v0.5.0
@@ -26,6 +24,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6
+	golang.org/x/net v0.30.0
 )
 
 require (
@@ -76,7 +75,6 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
-	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
