@@ -39,8 +39,6 @@ const (
 	ALIGMENT_RIGHT  = "right"
 	ALIGMENT_CENTER = "center"
 
-	SIGMA = 5
-
 	BASE_FOLDER = "TemplateModule"
 
 	STRIPE              = "assets/stripe.png"

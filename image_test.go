@@ -41,7 +41,8 @@ func TestImageDraw(t *testing.T) {
 		// Test image scaling
 		testImage.Path = "assets/binoculars.png"
 		testImage.ImageScaling = IMAGE_SCALING_FIT_WIDTH
-		testImage.ShadowDistance = 3
+		testImage.ShadowDistance = 8
+		testImage.ShadowSigma = 3
 		testImage.Scale = 0.5
 		testImage.Margins = 5
 		err = testImage.Draw(testCanvas, 11, testImage.Settings)
@@ -58,7 +59,7 @@ func TestImageDraw(t *testing.T) {
 		byt := new(bytes.Buffer)
 		err = testCanvas.EncodePNG(byt)
 		assert.NoError(t, err)
-		assert.Equal(t, 13339, byt.Len(), "The image should have 4904 bytes but has %d bytes", byt.Len())
+		assert.Equal(t, 13552, byt.Len(), "The image should have 13552 bytes but has %d bytes", byt.Len())
 
 		// Compare the buffer with the expected image
 		expectedImage, err := os.Open("testdata/image_draw_01.png")
@@ -67,7 +68,7 @@ func TestImageDraw(t *testing.T) {
 
 		expectedBytes, err := io.ReadAll(expectedImage)
 		assert.NoError(t, err)
-		assert.Equal(t, 13339, len(expectedBytes), "The expected image (from the file, not the generated image) should have 4904 bytes but has %d bytes", byt.Len())
+		assert.Equal(t, 13552, len(expectedBytes), "The expected image (from the file, not the generated image) should have 13552 bytes but has %d bytes", byt.Len())
 
 		assert.Equal(t, expectedBytes, byt.Bytes())
 	})

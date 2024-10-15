@@ -60,7 +60,7 @@ func (i *Image) Draw(dc *gg.Context, pos int, _ Settings) error {
 		return err
 	}
 	if i.ShadowDistance != 0 {
-		shadow := getShadowFromImage(img, i.ShadowDistance, SIGMA)
+		shadow := getShadowFromImage(img, i.ShadowDistance, i.ShadowSigma)
 		x1 := math.Floor(x + float64(i.ShadowDistance))
 		y1 := math.Floor(y + float64(i.ShadowDistance))
 		dc.DrawImageAnchored(shadow, int(x1), int(y1), ax, ay)

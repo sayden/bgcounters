@@ -81,20 +81,16 @@ func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
 
 	img = CropToContent(img)
 
-	var y float64
-	x, y, ax, ay, err = t.getObjectPositions(pos, settings)
+	x, y, ax, ay, err := t.getObjectPositions(pos, settings)
 	if err != nil {
 		return errors.Wrap(err, "could not get a correct position")
 	}
+
 	if settings.ShadowDistance != 0 {
-		shadow := getShadowFromImage(img, t.ShadowDistance, SIGMA)
+		shadow := getShadowFromImage(img, t.ShadowDistance, t.ShadowSigma)
 		shadowCtx := gg.NewContextForImage(shadow)
-		shadowCtx.DrawImageAnchored(img, (shadowCtx.Width()/2)-t.ShadowDistance, (shadowCtx.Height()/2)-t.ShadowDistance, 0.5, 0.5)
-		y1 := int(y) - (shadowCtx.Height() / 2) + (img.Bounds().Dy() / 2)
-		//x1 := int(x)-(shadowCtx.Width()/2)+(img.Bounds().Dx()/2)
-		x1 := int(x)
-		dc.DrawImageAnchored(shadowCtx.Image(), x1, y1, ax, ay)
-		return nil
+		shadowCtx.DrawImageAnchored(img, (shadowCtx.Width() / 2), (shadowCtx.Height() / 2), 0.5, 0.5)
+		img = shadowCtx.Image()
 	}
 
 	if t.TextBackgroundColor != "" {
@@ -129,32 +125,6 @@ func (t *Text) getTextDimensions(pos int, def Settings) (float64, float64, float
 	}
 
 	return x, y, ax, ay, maxWidth, nil
-}
-
-// TODO remove if not used
-func drawTextWithStroke(t string, x, y, ax, ay float64, temp *gg.Context, textColor color.Color, strokeSize float64, strokeColor color.Color) {
-	temp.Push()
-	defer temp.Pop()
-
-	//Draw stroke
-	if strokeColor != nil {
-		temp.SetColor(strokeColor)
-		for dy := -strokeSize; dy <= strokeSize; dy++ {
-			for dx := -strokeSize; dx <= strokeSize; dx++ {
-				if dx*dx+dy*dy >= strokeSize*strokeSize {
-					// give it rounded corners
-					continue
-				}
-				x := x + dx
-				y := y + dy
-				temp.DrawStringAnchored(t, x, y, ax, ay)
-			}
-		}
-	}
-
-	//Draw text
-	temp.SetColor(textColor)
-	temp.DrawStringAnchored(t, x, y, ax, ay)
 }
 
 func drawTextWrappedWithStroke(t string, x, y, ax, ay, w float64, temp *gg.Context, textColor color.Color, strokeSize float64, strokeColor color.Color, align gg.Align) {

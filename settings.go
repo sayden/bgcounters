@@ -22,6 +22,7 @@ type Settings struct {
 	BgColor         color.Color `json:"-"`
 
 	ShadowDistance int `json:"shadow,omitempty" default:"0"`
+	ShadowSigma    int `json:"shadow_sigma,omitempty" default:"5"`
 
 	Rotation float64 `json:"rotation,omitempty"`
 
