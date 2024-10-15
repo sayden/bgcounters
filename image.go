@@ -19,18 +19,6 @@ type Image struct {
 	AvoidCropping bool    `json:"avoid_cropping,omitempty"`
 }
 
-func (i *Image) SetWidth(w int) {
-	i.Width = w
-}
-
-func (i *Image) SetHeight(h int) {
-	i.Height = h
-}
-
-func (i *Image) GetSettings() Settings {
-	return i.Settings
-}
-
 func (i *Image) Draw(dc *gg.Context, pos int, _ Settings) error {
 	img, err := gg.LoadImage(i.Path)
 	if err != nil {

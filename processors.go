@@ -28,8 +28,8 @@ func DrawImagesOnCanvas(images []Image, s *Settings, areaCanvas *gg.Context, w, 
 	for _, image := range images {
 		Merge(&image.Settings, *s)
 
-		image.SetWidth(w)
-		image.SetHeight(h)
+		image.Width = w
+		image.Height = h
 
 		if err := image.Draw(areaCanvas, image.Position, image.Settings); err != nil {
 			return errors.Wrap(err, "could not draw image")
