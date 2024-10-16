@@ -14,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sayden/counters"
 	"github.com/sayden/counters/output"
-	"github.com/sayden/counters/transform"
 	"golang.org/x/net/http2"
 )
 
@@ -218,7 +217,7 @@ func generateCounter(byt []byte, wd string) (*response, error) {
 		return nil, err
 	}
 
-	newTemplate, err := transform.ParsePrototypedTemplate(tempTemplate)
+	newTemplate, err := counters.ParsePrototypedTemplate(tempTemplate)
 	if err != nil {
 		return nil, err
 	}

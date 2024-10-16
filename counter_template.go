@@ -2,7 +2,7 @@ package counters
 
 import (
 	"encoding/json"
-	"fmt"
+	"io"
 	"os"
 
 	"github.com/charmbracelet/log"
@@ -44,6 +44,10 @@ func ParseCountersJsonFile(filepath string, outputFolder ...string) (*CounterTem
 // ParseTemplate reads a JSON file and parses it into a CounterTemplate after applying it some default settings (if not
 // present in the file)
 func ParseTemplate(byt []byte) (t *CounterTemplate, err error) {
+	if err = ValidateSchemaBytes(byt); err != nil {
+		return nil, errors.Wrap(err, "JSON file is not valid")
+	}
+
 	t = &CounterTemplate{}
 	if err = defaults.Set(t); err != nil {
 		return nil, errors.Wrap(err, "could not apply defaults to counter template")
@@ -105,51 +109,49 @@ func ApplyCounterWaterfallSettings(t *CounterTemplate) {
 	}
 }
 
-func ValidateSchemaBytes(byt []byte) error {
-	r := new(jsonschema.Reflector)
-	counterTemplateSchemaMarshaller := r.Reflect(&CounterTemplate{})
-	byt, err := counterTemplateSchemaMarshaller.MarshalJSON()
+func ValidateSchemaReader(r io.Reader) error {
+	byt, err := io.ReadAll(r)
+	if err != nil {
+		return errors.Wrap(err, "could not read JSON file")
+	}
+	return ValidateSchemaBytes(byt)
+}
+
+func ValidateSchemaBytes(docByt []byte) error {
+	reflector := new(jsonschema.Reflector)
+	counterTemplateSchemaMarshaller := reflector.Reflect(&CounterTemplate{})
+	schemaByt, err := counterTemplateSchemaMarshaller.MarshalJSON()
 	if err != nil {
 		return errors.Wrap(err, "could not marshal counter template schema")
 	}
+	schema := gojsonschema.NewBytesLoader(schemaByt)
 
-	schema := gojsonschema.NewBytesLoader(byt)
-	documentLoader := gojsonschema.NewBytesLoader(byt)
+	documentLoader := gojsonschema.NewBytesLoader(docByt)
 	result, err := gojsonschema.Validate(schema, documentLoader)
 	if err != nil {
 		return errors.Wrap(err, "could not validate JSON file")
 	}
 
-	if !result.Valid() {
-		for _, schemaErr := range result.Errors() {
-			log.Error("ValidateSchema", "error", schemaErr.String())
-		}
-		return fmt.Errorf("JSON file is not valid")
-	}
-
-	return nil
+	return validateResult(result)
 }
 
 func ValidateSchemaAtPath(inputPath string) error {
-	r := new(jsonschema.Reflector)
-	counterTemplateSchemaMarshaller := r.Reflect(&CounterTemplate{})
-	byt, err := counterTemplateSchemaMarshaller.MarshalJSON()
+	byt, err := os.ReadFile(inputPath)
 	if err != nil {
-		return errors.Wrap(err, "could not marshal counter template schema")
+		return errors.Wrap(err, "could not read JSON file")
 	}
 
-	schema := gojsonschema.NewBytesLoader(byt)
-	documentLoader := gojsonschema.NewReferenceLoader("file://" + inputPath)
-	result, err := gojsonschema.Validate(schema, documentLoader)
-	if err != nil {
-		return errors.Wrap(err, "could not validate JSON file")
-	}
+	return ValidateSchemaBytes(byt)
+}
 
+func validateResult(result *gojsonschema.Result) error {
 	if !result.Valid() {
+		err := errors.New("JSON file is not valid\n")
 		for _, desc := range result.Errors() {
-			log.Errorf("- %v", desc)
+			err = errors.Wrap(err, "\n"+desc.String())
 		}
-		return errors.Wrap(err, "JSON file is not valid")
+
+		return err
 	}
 
 	return nil

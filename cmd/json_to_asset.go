@@ -5,7 +5,6 @@ import (
 	"github.com/sayden/counters"
 	"github.com/sayden/counters/input"
 	"github.com/sayden/counters/output"
-	"github.com/sayden/counters/transform"
 )
 
 func jsonToCards() (err error) {
@@ -33,7 +32,7 @@ func jsonToAsset(inputPath, outputPath string) (err error) {
 		return errors.Wrap(err, "error reading counter template")
 	}
 
-	newTemplate, err := transform.ParsePrototypedTemplate(counterTemplate)
+	newTemplate, err := counters.ParsePrototypedTemplate(counterTemplate)
 	if err != nil {
 		return errors.Wrap(err, "error parsing prototyped template")
 	}
