@@ -108,12 +108,12 @@ func (c *Counter) GetCounterFilename(position int, suffix string, filenumber int
 	return res
 }
 
-func applyCounterScaling(c *Counter, scaling float64) {
+func ApplyCounterScaling(c *Counter, scaling float64) {
 	for i := range c.Images {
 		applyImageScaling(&c.Images[i], scaling)
 	}
 
 	for i := range c.Texts {
-		applySettingsScaling(&c.Texts[i].Settings, scaling)
+		ApplySettingsScaling(&c.Texts[i].Settings, scaling)
 	}
 }

@@ -56,12 +56,12 @@ func generateNewCounterTemplate(outputPath string) error {
 		PositionNumberForFilename: 0,
 		Prototypes: map[string]counters.CounterPrototype{
 			"prototype1": {
-				TextsPrototypes: []counters.TextPrototype{
+				TextPrototypes: []counters.TextPrototype{
 					{
 						StringList: []string{"String1", "String2"},
 					},
 				},
-				ImagesPrototypes: []counters.ImagePrototype{
+				ImagePrototypes: []counters.ImagePrototype{
 					{
 						Image: counters.Image{
 							Settings: counters.Settings{

@@ -18,17 +18,17 @@ const (
 	maxWidth = 80
 )
 
-type model struct {
+type progressBar struct {
 	total    float64
 	percent  float64
 	progress progress.Model
 }
 
-func (m *model) Init() tea.Cmd {
+func (m *progressBar) Init() tea.Cmd {
 	return nil
 }
 
-func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *progressBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		return m, tea.Quit
@@ -53,7 +53,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m *model) View() string {
+func (m *progressBar) View() string {
 	pad := strings.Repeat(" ", padding)
 	return "\n" +
 		pad + m.progress.ViewAs(m.percent) + "\n\n"
@@ -106,7 +106,7 @@ func CountersToPNG(template *counters.CounterTemplate) error {
 		}
 	}
 	prog := progress.New(progress.WithScaledGradient("#FF7CCB", "#FDFF8C"))
-	program := tea.NewProgram(&model{progress: prog, total: float64(total)})
+	program := tea.NewProgram(&progressBar{progress: prog, total: float64(total)})
 	go program.Run()
 	defer program.Quit()
 

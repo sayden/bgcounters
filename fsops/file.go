@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/thehivecorporation/log"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/thehivecorporation/log"
 )
 
 func ReadMarkupFile(markupFilepath string, destination interface{}) error {
@@ -50,4 +52,35 @@ func FilenameExistsInFolder(filename, folder string) bool {
 	}
 
 	return false
+}
+
+// GetFilenamesForPath returns every path+filename found in `path`
+func GetFilenamesForPath(path string) ([]string, error) {
+	rootPath, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	images := make([]string, 0)
+
+	fullPath := rootPath + path
+	err = filepath.Walk(fullPath, func(imagePath string, info os.FileInfo, err error) error {
+		if imagePath == fullPath {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		images = append(images, imagePath)
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "could not finish reading files from folder")
+	}
+
+	return images, nil
 }

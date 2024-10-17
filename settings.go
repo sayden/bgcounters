@@ -55,7 +55,7 @@ type Settings struct {
 	Skip bool `json:"skip,omitempty"`
 }
 
-func applySettingsScaling(s *Settings, scaling float64) {
+func ApplySettingsScaling(s *Settings, scaling float64) {
 	s.Width = int(scaling * float64(s.Width))
 	s.Height = int(scaling * float64(s.Height))
 

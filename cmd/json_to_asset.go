@@ -32,7 +32,7 @@ func jsonToAsset(inputPath, outputPath string) (err error) {
 		return errors.Wrap(err, "error reading counter template")
 	}
 
-	newTemplate, err := counters.ParsePrototypedTemplate(counterTemplate)
+	newTemplate, err := counterTemplate.ParsePrototype()
 	if err != nil {
 		return errors.Wrap(err, "error parsing prototyped template")
 	}
