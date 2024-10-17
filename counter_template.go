@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"sort"
 
-	"github.com/charmbracelet/log"
 	"github.com/creasty/defaults"
 	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
@@ -30,20 +30,63 @@ type CounterTemplate struct {
 	Prototypes map[string]CounterPrototype `json:"prototypes,omitempty"`
 }
 
-// ParseCountersJsonFile reads a JSON files and parses it into a CounterTemplate after applying it some default
-// settings (if not present in the file)
-func ParseCountersJsonFile(filepath string, outputFolder ...string) (*CounterTemplate, error) {
-	byt, err := os.ReadFile(filepath)
+func (ct *CounterTemplate) ParsePrototype() (*CounterTemplate, error) {
+	// JSON counters to Counters
+	newTemplate, err := ct.ExpandPrototypeCounterTemplate()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not read JSON file")
+		return nil, errors.Wrap(err, "error trying to convert a counter template into another counter template")
+	}
+	newTemplate.Scaling = 1
+
+	byt, err := json.Marshal(newTemplate)
+	if err != nil {
+		return nil, err
 	}
 
-	return ParseTemplate(byt)
+	newTemplate, err = ParseCounterTemplate(byt)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not parse JSON file")
+	}
+
+	return newTemplate, nil
 }
 
-// ParseTemplate reads a JSON file and parses it into a CounterTemplate after applying it some default settings (if not
+func (ct *CounterTemplate) ExpandPrototypeCounterTemplate() (t *CounterTemplate, err error) {
+	// JSON counters to Counters, check Prototype in CounterTemplate
+	if ct.Prototypes != nil {
+		if ct.Counters == nil {
+			ct.Counters = make([]Counter, 0)
+		}
+
+		// sort prototypes by name, to ensure consistent output filenames this is a small
+		// inconvenience, because iterating over maps in Go returns keys in random order
+		names := make([]string, 0, len(ct.Prototypes))
+		for name := range ct.Prototypes {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+
+		for _, prototypeName := range names {
+			prototype := ct.Prototypes[prototypeName]
+
+			cts, err := prototype.ToCounters()
+			if err != nil {
+				return nil, err
+			}
+
+			ct.Counters = append(ct.Counters, cts...)
+		}
+
+		ct.Prototypes = nil
+		return ct, nil
+	}
+
+	return ct, nil
+}
+
+// ParseCounterTemplate reads a JSON file and parses it into a CounterTemplate after applying it some default settings (if not
 // present in the file)
-func ParseTemplate(byt []byte) (t *CounterTemplate, err error) {
+func ParseCounterTemplate(byt []byte) (t *CounterTemplate, err error) {
 	if err = ValidateSchemaBytes(byt); err != nil {
 		return nil, errors.Wrap(err, "JSON file is not valid")
 	}
@@ -54,18 +97,17 @@ func ParseTemplate(byt []byte) (t *CounterTemplate, err error) {
 	}
 
 	if err = json.Unmarshal(byt, &t); err != nil {
-		log.Error("could not parse JSON into a counter template", "incoming_data", string(byt))
 		return nil, err
 	}
 
-	applySettingsScaling(&t.Settings, t.Scaling)
+	ApplySettingsScaling(&t.Settings, t.Scaling)
 
 	ApplyCounterWaterfallSettings(t)
 
 	if t.Scaling != 1.0 {
 		for i := range t.Counters {
 			c := t.Counters[i]
-			applyCounterScaling(&c, t.Scaling)
+			ApplyCounterScaling(&c, t.Scaling)
 		}
 	}
 

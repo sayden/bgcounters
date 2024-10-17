@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
 	"github.com/sayden/counters/input"
@@ -45,7 +47,7 @@ func csvToCards(byt []byte) (err error) {
 	}
 
 	// Generate a JSON version of the incoming CSV
-	content, err := input.ReadCSVCardsFromBytes(byt, cardsTemplate)
+	content, err := input.ReadCSVCards(bytes.NewReader(byt), cardsTemplate)
 	if err != nil {
 		return err
 	}

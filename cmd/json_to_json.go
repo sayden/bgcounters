@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/pkg/errors"
 	"github.com/sayden/counters"
+	"github.com/sayden/counters/fsops"
 	"github.com/sayden/counters/input"
 	"github.com/sayden/counters/output"
 	"github.com/sayden/counters/transform"
@@ -58,7 +59,7 @@ func jsonCountersToJsonCards(counterTemplate *counters.CounterTemplate) (err err
 }
 
 func jsonToJsonCardEvents(events []counters.Event) (err error) {
-	images, err := input.GetFilenamesForPath(Cli.Json.BackgroundImages)
+	images, err := fsops.GetFilenamesForPath(Cli.Json.BackgroundImages)
 	if err != nil {
 		return errors.Wrap(err, "error trying to load bg images")
 	}

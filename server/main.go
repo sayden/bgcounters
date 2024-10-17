@@ -212,12 +212,12 @@ func generateCounter(byt []byte, wd string) (*response, error) {
 
 	// ParseTemplate requires a byte slice, this is because it Unmarshals the JSON on top
 	// of a CounterTemplate struct with default values, overriding them with the JSON values
-	tempTemplate, err := counters.ParseTemplate(byt)
+	tempTemplate, err := counters.ParseCounterTemplate(byt)
 	if err != nil {
 		return nil, err
 	}
 
-	newTemplate, err := counters.ParsePrototypedTemplate(tempTemplate)
+	newTemplate, err := tempTemplate.ParsePrototype()
 	if err != nil {
 		return nil, err
 	}

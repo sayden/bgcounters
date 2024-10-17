@@ -78,7 +78,7 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 		switch Cli.Json.OutputType {
 		case "counters":
 			// JSON counters to Counters
-			newTempl, err := counters.JsonPrototypeToTemplate(counterTemplate)
+			newTempl, err := counterTemplate.ExpandPrototypeCounterTemplate()
 			if err != nil {
 				return errors.Wrap(err, "error trying to convert a counter template into another counter template")
 			}
@@ -86,7 +86,7 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 
 		case "back-counters":
 			// JSON counters to Counters
-			newTempl, err := counters.JsonPrototypeToTemplate(counterTemplate)
+			newTempl, err := counterTemplate.ExpandPrototypeCounterTemplate()
 			if err != nil {
 				return errors.Wrap(err, "error trying to convert a counter template into another counter template")
 			}

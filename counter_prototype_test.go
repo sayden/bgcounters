@@ -9,16 +9,47 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCounterPrototypeToCounter(t *testing.T) {
+	proto := CounterPrototype{
+		Counter: Counter{
+			Texts: []Text{{String: "text"}},
+		},
+		TextPrototypes: []TextPrototype{
+			{StringList: []string{"text1", "text2"}},
+		},
+		ImagePrototypes: []ImagePrototype{
+			{PathList: []string{"../assets/binoculars.png", "../assets/stripe.png"}},
+		},
+	}
+
+	counter, err := proto.ToCounters()
+	if assert.NoError(t, err) {
+		assert.Equal(t, 2, len(counter))
+		assert.Equal(t, "text", counter[0].Texts[0].String)
+		assert.Equal(t, "text1", counter[0].Texts[1].String)
+		assert.Equal(t, "../assets/binoculars.png", counter[0].Images[0].Path)
+
+		assert.Equal(t, "text", counter[1].Texts[0].String)
+		assert.Equal(t, "text2", counter[1].Texts[1].String)
+		assert.Equal(t, "../assets/stripe.png", counter[1].Images[0].Path)
+	}
+}
+
 func TestJSONPrototypes(t *testing.T) {
 	// read the json file with testing data
 	filepath := "./testdata/prototype.json"
-	newTempl, err := ParseCountersJsonFile(filepath, "")
+	byt, err := os.ReadFile(filepath)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	newTempl, err := ParseCounterTemplate(byt)
 	if !assert.NoError(t, err, "could not parse the template") {
 		t.FailNow()
 	}
 
 	// Extract the counters from the prototypes into a new template
-	newTempl, err = ParsePrototypedTemplate(newTempl)
+	newTempl, err = newTempl.ParsePrototype()
 	assert.NoError(t, err)
 
 	// check the new template

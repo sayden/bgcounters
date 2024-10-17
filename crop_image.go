@@ -1,12 +1,13 @@
 package counters
 
 import (
-	"github.com/disintegration/imaging"
-	"github.com/pkg/errors"
-	"github.com/thehivecorporation/log"
 	"image"
 	"os"
 	"path/filepath"
+
+	"github.com/disintegration/imaging"
+	"github.com/pkg/errors"
+	"github.com/thehivecorporation/log"
 )
 
 // CropFolderToContent is like CropToContentFile but it will crop
@@ -98,7 +99,7 @@ rightLimitLoop:
 			_, _, _, alpha = i.At(column, row).RGBA()
 			//If color is found
 			if alpha > 0 {
-				rightLimit = column+1
+				rightLimit = column + 1
 				break rightLimitLoop
 			}
 		}
@@ -110,7 +111,7 @@ lowerLimitLoop:
 			_, _, _, alpha = i.At(column, row).RGBA()
 			//If color is found
 			if alpha > 0 {
-				lowerLimit = row+1
+				lowerLimit = row + 1
 				break lowerLimitLoop
 			}
 		}

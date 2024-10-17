@@ -5,22 +5,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-type DrawingItem interface {
-	Draw(dc *gg.Context, pos int, def Settings)
-}
-
-type setDimensions interface {
-	SetWidth(w int)
-	SetHeight(h int)
-}
-
-type CounterItem interface {
-	setDimensions
-	DrawingItem
-	GetPosition() int
-	GetSettings() Settings
-}
-
 type Card struct {
 	Settings
 	Areas  []Counter `json:"areas"`
@@ -53,14 +37,14 @@ func GetCanvas(settings *Settings, width, height int, t *CardsTemplate) (*gg.Con
 }
 
 func applyCardScaling(t *CardsTemplate) {
-	applySettingsScaling(&t.Settings, t.Scaling)
+	ApplySettingsScaling(&t.Settings, t.Scaling)
 
 	for i := range t.Cards {
 		c := t.Cards[i]
-		applySettingsScaling(&c.Settings, t.Scaling)
+		ApplySettingsScaling(&c.Settings, t.Scaling)
 
 		for j := range c.Areas {
-			applyCounterScaling(&c.Areas[j], t.Scaling)
+			ApplyCounterScaling(&c.Areas[j], t.Scaling)
 		}
 
 		for j := range c.Images {
@@ -68,7 +52,7 @@ func applyCardScaling(t *CardsTemplate) {
 		}
 
 		for j := range c.Texts {
-			applySettingsScaling(&c.Texts[j].Settings, t.Scaling)
+			ApplySettingsScaling(&c.Texts[j].Settings, t.Scaling)
 		}
 	}
 }
