@@ -5,22 +5,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-type DrawingItem interface {
-	Draw(dc *gg.Context, pos int, def Settings)
-}
-
-type setDimensions interface {
-	SetWidth(w int)
-	SetHeight(h int)
-}
-
-type CounterItem interface {
-	setDimensions
-	DrawingItem
-	GetPosition() int
-	GetSettings() Settings
-}
-
 type Card struct {
 	Settings
 	Areas  []Counter `json:"areas"`
