@@ -2,55 +2,9 @@ package counters
 
 import (
 	"image"
-	"os"
-	"path/filepath"
 
 	"github.com/disintegration/imaging"
-	"github.com/pkg/errors"
-	"github.com/thehivecorporation/log"
 )
-
-// CropFolderToContent is like CropToContentFile but it will crop
-// all images in the provided folder
-func CropFolderToContent(folderPath string) error {
-	rootPath, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	fullPath := rootPath + string(os.PathSeparator) + folderPath
-	return filepath.Walk(fullPath, func(imagePath string, info os.FileInfo, err error) error {
-		if imagePath == fullPath {
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-
-		err = CropToContentFile(imagePath)
-		if err != nil {
-			log.WithError(err).Error("omitting file")
-		}
-
-		return nil
-	})
-}
-
-// CropToContentFile is like CropToContent but the file read will be
-// overriden with the resulting image. USE WITH CARE!
-func CropToContentFile(imagePath string) error {
-	img, err := imaging.Open(imagePath)
-	if err != nil {
-		return errors.Wrapf(err, "error trying to open file '%s'", imagePath)
-	}
-
-	newImage := CropToContent(img)
-	if newImage == img {
-		return nil
-	}
-
-	return imaging.Save(newImage, imagePath)
-}
 
 func CropToContent(i image.Image) image.Image {
 	bounds := i.Bounds()
