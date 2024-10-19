@@ -22,6 +22,25 @@ type Text struct {
 	TextBgColor         color.Color `json:"-"`
 }
 
+type Texts []Text
+
+// DrawTextsOnCanvas draws the texts provided on areaCanvas at positions `w` and `h`
+// using the provided Settings
+func (texts Texts) DrawTextsOnCanvas(s Settings, areaCanvas *gg.Context, w, h int) error {
+	for _, text := range texts {
+		Merge(&text.Settings, s)
+
+		text.Width = w
+		text.Height = h
+		err := text.Draw(areaCanvas, text.Position, text.Settings)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (t *Text) GetAlignment() gg.Align {
 	switch t.Alignment {
 	case ALIGMENT_CENTER:
@@ -96,7 +115,7 @@ func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
 	if t.TextBackgroundColor != "" {
 		bgTemp := gg.NewContext(img.Bounds().Dx()+int(settings.FontHeight*0.40), img.Bounds().Dy()+int(settings.FontHeight*0.40))
 		bgTemp.Push()
-		bgTemp.SetColor(GetValidColorForString(t.TextBackgroundColor, t.TextBgColor))
+		bgTemp.SetColor(ColorFromStringOrDefault(t.TextBackgroundColor, t.TextBgColor))
 		bgTemp.DrawRectangle(0, 0, float64(dc.Width()), float64(dc.Height()))
 		bgTemp.Fill()
 		bgTemp.Pop()

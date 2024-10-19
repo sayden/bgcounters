@@ -8,8 +8,8 @@ import (
 type Card struct {
 	Settings
 	Areas  []Counter `json:"areas"`
-	Texts  []Text    `json:"texts"`
-	Images []Image   `json:"images"`
+	Texts  Texts     `json:"texts"`
+	Images Images    `json:"images"`
 }
 
 // GetCanvas returns a Canvas with attributes (like background color or size)
@@ -30,15 +30,13 @@ func GetCanvas(settings *Settings, width, height int, t *CardsTemplate) (*gg.Con
 	}
 
 	if settings.FontColorS != "" {
-		GetValidColorForString(settings.FontColorS, t.BgColor)
+		ColorFromStringOrDefault(settings.FontColorS, t.BgColor)
 	}
 
 	return dc, nil
 }
 
 func applyCardScaling(t *CardsTemplate) {
-	ApplySettingsScaling(&t.Settings, t.Scaling)
-
 	for i := range t.Cards {
 		c := t.Cards[i]
 		ApplySettingsScaling(&c.Settings, t.Scaling)
@@ -55,4 +53,6 @@ func applyCardScaling(t *CardsTemplate) {
 			ApplySettingsScaling(&c.Texts[j].Settings, t.Scaling)
 		}
 	}
+
+	ApplySettingsScaling(&t.Settings, t.Scaling)
 }

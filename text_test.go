@@ -1,10 +1,7 @@
 package counters
 
 import (
-	"bytes"
 	"image/color"
-	"io"
-	"os"
 	"testing"
 
 	"github.com/fogleman/gg"
@@ -14,14 +11,6 @@ import (
 func TestTextDraw(t *testing.T) {
 	t.Run("text_draw_01", func(t *testing.T) {
 		sideSize := 300
-		testCanvas := gg.NewContext(sideSize, sideSize)
-
-		testCanvas.Push()
-		testCanvas.SetColor(color.White)
-		testCanvas.DrawRectangle(0, 0, float64(sideSize), float64(sideSize))
-		testCanvas.Fill()
-		testCanvas.Pop()
-
 		testText := Text{
 			Settings: Settings{
 				FontPath:   "assets/freesans.ttf",
@@ -33,6 +22,13 @@ func TestTextDraw(t *testing.T) {
 			},
 			String: "11-Hello",
 		}
+		testCanvas := gg.NewContext(sideSize, sideSize)
+
+		testCanvas.Push()
+		testCanvas.SetColor(color.White)
+		testCanvas.DrawRectangle(0, 0, float64(sideSize), float64(sideSize))
+		testCanvas.Fill()
+		testCanvas.Pop()
 
 		err := testText.Draw(testCanvas, 11, testText.Settings)
 		assert.NoError(t, err)
@@ -79,21 +75,115 @@ func TestTextDraw(t *testing.T) {
 		testText.String = "14-Red bg"
 		err = testText.Draw(testCanvas, 14, testText.Settings)
 
-		byt := new(bytes.Buffer)
-		err = testCanvas.EncodePNG(byt)
-		assert.NoError(t, err)
-		assert.Equal(t, 21089, byt.Len(), "The image should have 21089 bytes but has %d bytes", byt.Len())
+		testImageContent(t, "testdata/text_draw_01.png", 21089, testCanvas)
+	})
+}
 
-		// Compare the buffer with the expected image
-		expectedImage, err := os.Open("testdata/text_draw_01.png")
-		assert.NoError(t, err, "The expected image should be present")
-		defer expectedImage.Close()
+func TestDrawTextsOnCanvas(t *testing.T) {
+	t.Run("text_draw_01", func(t *testing.T) {
+		sideSize := 300
+		texts := Texts{
+			{
+				Settings: Settings{
+					Position:   11,
+					FontPath:   "assets/freesans.ttf",
+					FontColorS: "black",
+					FontHeight: 30,
+					Width:      sideSize,
+					Height:     sideSize,
+					Margins:    3,
+				},
+				String: "11-Hello",
+			},
+			{
+				Settings: Settings{
+					Position:   3,
+					FontPath:   "assets/freesans.ttf",
+					FontHeight: 30,
+					Width:      sideSize,
+					Height:     sideSize,
+					Margins:    3,
+					FontColorS: "blue",
+				},
+				Underline: true,
+				String:    "3-World",
+			},
+			{
+				Settings: Settings{
+					Position:   7,
+					FontPath:   "assets/freesans.ttf",
+					FontHeight: 25,
+					Width:      sideSize,
+					Height:     sideSize,
+					Margins:    3,
+					FontColorS: "blue",
+				},
+				Underline: true,
+				String:    "7-Without Clipping",
+			},
+			{
+				Settings: Settings{
+					Position:      16,
+					FontPath:      "assets/freesans.ttf",
+					FontHeight:    25,
+					Width:         sideSize,
+					Height:        sideSize,
+					Margins:       3,
+					FontColorS:    "white",
+					AvoidClipping: true,
+					StrokeWidth:   3,
+					StrokeColorS:  "black",
+				},
+				Underline: false,
+				String:    "16-With clipping",
+			},
+			{
+				Settings: Settings{
+					Position:       15,
+					FontPath:       "assets/freesans.ttf",
+					FontHeight:     25,
+					Width:          sideSize,
+					Height:         sideSize,
+					Margins:        3,
+					FontColorS:     "black",
+					StrokeColorS:   "black",
+					ShadowDistance: 2,
+					ShadowSigma:    2,
+				},
+				Underline: false,
+				String:    "15-Sh",
+			},
+			{
+				Settings: Settings{
+					Position:       14,
+					FontPath:       "assets/freesans.ttf",
+					FontHeight:     25,
+					Width:          sideSize,
+					Height:         sideSize,
+					Margins:        3,
+					FontColorS:     "white",
+					AvoidClipping:  true,
+					StrokeColorS:   "black",
+					ShadowDistance: 2,
+					ShadowSigma:    2,
+				},
+				TextBackgroundColor: "red",
+				Underline:           false,
+				String:              "14-Red bg",
+			},
+		}
 
-		expectedBytes, err := io.ReadAll(expectedImage)
-		assert.NoError(t, err)
-		assert.Equal(t, 21089, len(expectedBytes), "The expected image (from the file, not the "+
-			"generated image) should have 21089 bytes but has %d bytes", byt.Len())
+		testCanvas := gg.NewContext(sideSize, sideSize)
 
-		assert.Equal(t, expectedBytes, byt.Bytes())
+		testCanvas.Push()
+		testCanvas.SetColor(color.White)
+		testCanvas.DrawRectangle(0, 0, float64(sideSize), float64(sideSize))
+		testCanvas.Fill()
+		testCanvas.Pop()
+
+		err := texts.DrawTextsOnCanvas(Settings{}, testCanvas, sideSize, sideSize)
+		if assert.NoError(t, err) {
+			testImageContent(t, "./testdata/text_draw_01.png", 21089, testCanvas)
+		}
 	})
 }

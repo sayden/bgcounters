@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image/color"
 
-	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
 	"github.com/pkg/errors"
 	"github.com/sayden/counters"
@@ -126,22 +125,4 @@ func drawFrame(c *gg.Context, w float64, col color.Color) {
 	c.DrawRectangle(0, 0, frameX, frameY)
 	c.Stroke()
 	c.Pop()
-}
-
-// drawBackgroundImage draws the background image, if any, on the provided context
-func drawBackgroundImage(dc *gg.Context, s counters.Settings) error {
-	if s.BackgroundImage == "" {
-		return nil
-	}
-
-	img, err := imaging.Open(s.BackgroundImage)
-	if err != nil {
-		log.WithField("image", s.BackgroundImage).Error(err)
-		return err
-	}
-
-	img = imaging.Resize(img, 0, s.Height, imaging.Gaussian)
-	dc.DrawImageAnchored(img, dc.Width()/2, dc.Height()/2, 0.5, 0.5)
-
-	return nil
 }

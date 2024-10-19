@@ -2,7 +2,12 @@ package counters
 
 import (
 	"fmt"
+	"io"
 	"strings"
+
+	"github.com/fogleman/gg"
+	"github.com/pkg/errors"
+	"github.com/thehivecorporation/log"
 )
 
 // Counter is POGO-like holder for data needed for other parts to fill and draw
@@ -13,9 +18,9 @@ type Counter struct {
 	SingleStep bool `json:"single_step,omitempty"`
 	Frame      bool `json:"frame,omitempty"`
 
-	Images []Image `json:"images,omitempty"`
-	Texts  []Text  `json:"texts,omitempty"`
-	Extra  *Extra  `json:"extra,omitempty"`
+	Images Images `json:"images,omitempty"`
+	Texts  Texts  `json:"texts,omitempty"`
+	Extra  *Extra `json:"extra,omitempty"`
 
 	// Generate the following counter with 'back' suffix in its filename
 	Back *Counter `json:",omitempty"`
@@ -108,6 +113,59 @@ func (c *Counter) GetCounterFilename(position int, suffix string, filenumber int
 	return res
 }
 
+func (c *Counter) Canvas(withGuides bool) (*gg.Context, error) {
+	canvas, err := c.canvas()
+	if err != nil {
+		return nil, err
+	}
+
+	// Draw background image
+	if err = c.DrawBackgroundImage(canvas); err != nil {
+		return nil, errors.Wrap(err, "error trying to draw background image")
+	}
+
+	// Draw images
+	if err = c.Images.DrawImagesOnCanvas(&c.Settings, canvas, c.Width, c.Height); err != nil {
+		return nil, errors.Wrap(err, "error trying to process image")
+	}
+
+	// Draw texts
+	if err = c.Texts.DrawTextsOnCanvas(c.Settings, canvas, c.Width, c.Height); err != nil {
+		return nil, errors.Wrap(err, "error trying to draw text")
+	}
+
+	// Draw guides
+	if withGuides {
+		guides, err := DrawGuides(c.Settings)
+		if err != nil {
+			return nil, err
+		}
+		canvas.DrawImage(*guides, 0, 0)
+	}
+
+	return canvas, nil
+}
+
+func (c *Counter) canvas() (*gg.Context, error) {
+	dc := gg.NewContext(c.Width, c.Height)
+	if err := dc.LoadFontFace(c.FontPath, c.FontHeight); err != nil {
+		log.WithFields(log.Fields{"font": "'" + c.FontPath + "'", "height": c.FontHeight}).Error(err)
+		return nil, err
+	}
+
+	dc.Push()
+	dc.SetColor(c.BgColor)
+	dc.DrawRectangle(0, 0, float64(c.Width), float64(c.Height))
+	dc.Fill()
+	dc.Pop()
+
+	if c.FontColorS != "" && c.FontColor == nil {
+		ColorFromStringOrDefault(c.FontColorS, c.FontColor)
+	}
+
+	return dc, nil
+}
+
 func ApplyCounterScaling(c *Counter, scaling float64) {
 	for i := range c.Images {
 		applyImageScaling(&c.Images[i], scaling)
@@ -116,4 +174,15 @@ func ApplyCounterScaling(c *Counter, scaling float64) {
 	for i := range c.Texts {
 		ApplySettingsScaling(&c.Texts[i].Settings, scaling)
 	}
+
+	ApplySettingsScaling(&c.Settings, scaling)
+}
+
+func (c *Counter) EncodeCounter(w io.Writer, template *CounterTemplate) error {
+	counterCanvas, err := c.Canvas(template.DrawGuides)
+	if err != nil {
+		return err
+	}
+
+	return counterCanvas.EncodePNG(w)
 }

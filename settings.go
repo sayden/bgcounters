@@ -1,7 +1,13 @@
 package counters
 
 import (
+	"fmt"
 	"image/color"
+
+	"github.com/disintegration/imaging"
+	"github.com/fogleman/gg"
+	"github.com/imdario/mergo"
+	"github.com/thehivecorporation/log"
 )
 
 // Settings are used in counters and cards. Represents data required to draw and position a bounding box into a container
@@ -77,4 +83,38 @@ func ApplySettingsScaling(s *Settings, scaling float64) {
 	s.YShift *= scaling
 
 	s.StrokeWidth *= scaling
+}
+
+// DrawBackgroundImage draws the background image, if any, on the provided context
+func (s *Settings) DrawBackgroundImage(dc *gg.Context) error {
+	if s.BackgroundImage == "" {
+		return nil
+	}
+
+	img, err := imaging.Open(s.BackgroundImage)
+	if err != nil {
+		log.WithField("image", s.BackgroundImage).Error(err)
+		return err
+	}
+
+	img = imaging.Resize(img, 0, s.Height, imaging.Gaussian)
+	dc.DrawImageAnchored(img, dc.Width()/2, dc.Height()/2, 0.5, 0.5)
+
+	return nil
+}
+
+func Merge(d *Settings, s2 Settings, opt ...func(*mergo.Config)) error {
+	d.FontColor = nil
+	d.StrokeColor = nil
+	d.BorderColor = nil
+	d.BgColor = nil
+
+	err := mergo.Merge(d, s2, opt...)
+	if err != nil {
+		return fmt.Errorf("error merging settings: %v", err)
+	}
+
+	SetColors(d)
+
+	return nil
 }

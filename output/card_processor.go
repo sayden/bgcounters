@@ -35,11 +35,11 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 		return err
 	}
 
-	if err = drawBackgroundImage(c.cardCanvas, card.Settings); err != nil {
+	if err = card.DrawBackgroundImage(c.cardCanvas); err != nil {
 		return err
 	}
 
-	err = counters.DrawImagesOnCanvas(card.Images, &card.Settings, c.cardCanvas, card.Width, card.Height)
+	err = card.Images.DrawImagesOnCanvas(&card.Settings, c.cardCanvas, card.Width, card.Height)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,9 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 		y += areasHeights[areaIndex]
 	}
 
-	counters.DrawTextsOnCanvas(card.Texts, card.Settings, c.cardCanvas, card.Width, card.Height)
+	if err = card.Texts.DrawTextsOnCanvas(card.Settings, c.cardCanvas, card.Width, card.Height); err != nil {
+		return err
+	}
 
 	c.maybeDrawBorders(card)
 

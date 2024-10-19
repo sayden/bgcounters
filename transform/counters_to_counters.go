@@ -17,7 +17,7 @@ func CountersToCounters(cfg *CountersToCountersConfig) (*counters.CounterTemplat
 	finalOutputCounters := make([]counters.Counter, 0)
 
 	for _, counter := range cfg.OriginalCounterTemplate.Counters {
-		newCounter, err := cfg.CounterBuilder.ToCounter(&counter)
+		newCounter, err := cfg.CounterBuilder.ToNewCounter(&counter)
 		if err != nil {
 			return nil, errors.Wrap(err, "error trying to build counter")
 		}

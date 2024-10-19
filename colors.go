@@ -1,12 +1,13 @@
 package counters
 
 import (
+	"image/color"
+
 	"github.com/lucasb-eyer/go-colorful"
 	"golang.org/x/image/colornames"
-	"image/color"
 )
 
-func GetValidColorForString(s string, d color.Color) color.Color {
+func ColorFromStringOrDefault(s string, d color.Color) color.Color {
 	//Pretty color name like 'black' or 'yellow'
 	col, ok := colornames.Map[s]
 	if ok {
@@ -27,16 +28,20 @@ func GetValidColorForString(s string, d color.Color) color.Color {
 	return colornames.Black
 }
 
-
-func SetColorOrDefault(s, def *Settings) {
-	s.BorderColor = GetValidColorForString(s.BorderColorS, def.BorderColor)
-	s.FontColor = GetValidColorForString(s.FontColorS, def.FontColor)
-	s.BgColor = GetValidColorForString(s.BackgroundColor, def.BgColor)
-}
-
 func SetColors(s *Settings) {
-	s.BorderColor = GetValidColorForString(s.BorderColorS, color.Transparent)
-	s.FontColor = GetValidColorForString(s.FontColorS, color.Transparent)
-	s.BgColor = GetValidColorForString(s.BackgroundColor, color.Transparent)
-	s.StrokeColor = GetValidColorForString(s.StrokeColorS, nil)
+	if s.BorderColor == nil {
+		s.BorderColor = ColorFromStringOrDefault(s.BorderColorS, color.Transparent)
+	}
+
+	if s.FontColor == nil {
+		s.FontColor = ColorFromStringOrDefault(s.FontColorS, color.Transparent)
+	}
+
+	if s.BgColor == nil {
+		s.BgColor = ColorFromStringOrDefault(s.BackgroundColor, color.Transparent)
+	}
+
+	if s.StrokeColor == nil {
+		s.StrokeColor = ColorFromStringOrDefault(s.StrokeColorS, color.Transparent)
+	}
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
 	"github.com/sayden/counters"
-	"github.com/sayden/counters/output"
 	"golang.org/x/net/http2"
 )
 
@@ -232,7 +231,7 @@ func generateCounter(byt []byte, wd string) (*response, error) {
 		wc := base64.NewEncoder(base64.StdEncoding, buf)
 
 		// get a canvas with the rendered counter. The canvas can be written to a io.Writer
-		gc, err := output.GetCounterCanvas(&counter, newTemplate)
+		gc, err := counter.Canvas(newTemplate.DrawGuides)
 		if err != nil {
 			return nil, err
 		}

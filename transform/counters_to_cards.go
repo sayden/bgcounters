@@ -9,7 +9,7 @@ import (
 type CountersToCardsConfig struct {
 	CountersTemplate *counters.CounterTemplate
 	CardTemplate     *counters.CardsTemplate
-	CardCreator      counters.CardBuilder
+	CardBuilder      counters.CardBuilder
 }
 
 // CountersToCards using the provided input writes png images into files in batches of 70 (70 cards per file).
@@ -21,7 +21,7 @@ func CountersToCards(cfg *CountersToCardsConfig) (*counters.CardsTemplate, error
 	for _, counter := range cfg.CountersTemplate.Counters {
 		if !counter.Extra.SkipCardGeneration {
 			// convert counter to fow card
-			card, err := cfg.CardCreator.ToCard(counter, cfg.CardTemplate)
+			card, err := cfg.CardBuilder.ToNewCard(counter, cfg.CardTemplate)
 			if err != nil {
 				return nil, errors.Wrap(err, "error trying to create card")
 			}

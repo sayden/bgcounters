@@ -7,7 +7,9 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
+	"github.com/pkg/errors"
 	"github.com/thehivecorporation/log"
+	"golang.org/x/exp/slices"
 )
 
 type Image struct {
@@ -18,6 +20,8 @@ type Image struct {
 	Scale         float64 `json:"scale,omitempty" default:"1"`
 	AvoidCropping bool    `json:"avoid_cropping,omitempty"`
 }
+
+type Images []Image
 
 func (i *Image) Draw(dc *gg.Context, pos int, _ Settings) error {
 	img, err := gg.LoadImage(i.Path)
@@ -71,6 +75,27 @@ func (i *Image) Draw(dc *gg.Context, pos int, _ Settings) error {
 	return nil
 }
 
+// DrawImagesOnCanvas using the provided height `h` and width `w`
+func (images Images) DrawImagesOnCanvas(s *Settings, areaCanvas *gg.Context, w, h int) error {
+	// sort the internal objects by position
+	slices.SortFunc(images, func(i, j Image) int {
+		return i.Position - j.Position
+	})
+
+	for _, image := range images {
+		Merge(&image.Settings, *s)
+
+		image.Width = w
+		image.Height = h
+
+		if err := image.Draw(areaCanvas, image.Position, image.Settings); err != nil {
+			return errors.Wrap(err, "could not draw image")
+		}
+	}
+
+	return nil
+}
+
 func getShadowFromImage(img image.Image, shadowDistance int, sigma int) image.Image {
 	grey := imaging.AdjustBrightness(img, -100)
 	w, h := getShadowImageSize(img, shadowDistance, sigma)
@@ -106,6 +131,8 @@ func applyImageScaling(i *Image, scaling float64) {
 	i.YShift *= scaling
 
 	i.StrokeWidth *= scaling
+
+	ApplySettingsScaling(&i.Settings, scaling)
 
 	// if i.Scale == 0 {
 	// 	i.Scale = scaling

@@ -44,7 +44,7 @@ func jsonCountersToJsonCards(counterTemplate *counters.CounterTemplate) (err err
 		&transform.CountersToCardsConfig{
 			CountersTemplate: counterTemplate,
 			CardTemplate:     cardsTemplate,
-			CardCreator: &transform.QuotesToCardBuilder{
+			CardBuilder: &transform.QuotesToCardBuilder{
 				Quotes:         qs,
 				IndexForTitles: counterTemplate.PositionNumberForFilename,
 			},

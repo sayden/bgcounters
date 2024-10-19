@@ -41,11 +41,13 @@ func (a *areaProcessor) processArea(card *counters.Card, template *counters.Card
 		return errors.Wrap(err, "error trying to create a canvas")
 	}
 
-	if err = counters.DrawImagesOnCanvas(a.Images, &a.Settings, a.areaCanvas, a.Width, a.Height); err != nil {
+	if err = a.Images.DrawImagesOnCanvas(&a.Settings, a.areaCanvas, a.Width, a.Height); err != nil {
 		return errors.Wrap(err, "error trying to process image")
 	}
 
-	counters.DrawTextsOnCanvas(a.Texts, a.Settings, a.areaCanvas, a.Width, a.Height)
+	if err = a.Texts.DrawTextsOnCanvas(a.Settings, a.areaCanvas, a.Width, a.Height); err != nil {
+		return errors.Wrap(err, "error trying to draw text")
+	}
 
 	if !a.isLastArea && a.Frame {
 		drawFrame(a.areaCanvas, a.BorderWidth, a.BorderColor)

@@ -2,6 +2,7 @@ package output
 
 import (
 	"image/color"
+	"os"
 
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
@@ -14,6 +15,8 @@ func CountersToBlocks(frontTemplate, backTemplate *counters.CounterTemplate) err
 	if frontTemplate.Mode == counters.TEMPLATE_MODE_TILES {
 		return errors.New("tiles cannot be set when producing blocks")
 	}
+
+	_ = os.MkdirAll(backTemplate.OutputFolder, 0750)
 
 	counterPos := 0
 	row := 0
@@ -30,7 +33,7 @@ iteration:
 
 			counter := frontTemplate.Counters[counterPos]
 
-			counterCanvas, err := GetCounterCanvas(&counter, frontTemplate)
+			counterCanvas, err := counter.Canvas(frontTemplate.DrawGuides)
 			if err != nil {
 				return err
 			}
@@ -42,7 +45,7 @@ iteration:
 
 			if backTemplate != nil {
 				backCounter := backTemplate.Counters[counterPos]
-				backCounterCanvas, err := GetCounterCanvas(&backCounter, backTemplate)
+				backCounterCanvas, err := backCounter.Canvas(backTemplate.DrawGuides)
 				if err != nil {
 					return err
 				}
@@ -50,7 +53,7 @@ iteration:
 				addBackCounterToBlockCanvas(backCounterCanvas, blockCanvas)
 			}
 
-			err = writeCounterToFile(blockCanvas, counter, gs)
+			err = writeCounterToFile(blockCanvas, &counter, gs)
 			if err != nil {
 				return err
 			}
@@ -80,6 +83,8 @@ func addBackCounterToBlockCanvas(backCounter, blockCanvas *gg.Context) {
 	blockCanvas.DrawImage(img, int(canvasWidth-margin-backCounter.Width()), int(canvasHeight-margin-backCounter.Height()))
 }
 
+// getBlockCanvasFromCounterCanvas creates a new canvas for a block by scaling up the given counter canvas.
+// It sets the background color, loads the specified font, and draws the counter image onto the new canvas.
 func getBlockCanvasFromCounterCanvas(counterCanvas *gg.Context, cc *counters.Counter) (*gg.Context, error) {
 	const canvasRatio = 2.49
 	canvasWidth := float64(counterCanvas.Width()) * canvasRatio
@@ -96,45 +101,13 @@ func getBlockCanvasFromCounterCanvas(counterCanvas *gg.Context, cc *counters.Cou
 	dc.Pop()
 
 	if cc.FontColorS != "" {
-		// counters.GetValidColorForString(cc.FontColorS, t.BgColor)
-		counters.GetValidColorForString(cc.FontColorS, cc.BgColor)
+		counters.ColorFromStringOrDefault(cc.FontColorS, cc.BgColor)
 	}
 
 	// Draw the counter into the new canvas
 	margin := canvasWidth * 0.0508
 	bottomMargin := int(canvasHeigth - margin)
 	dc.DrawImage(counterCanvas.Image(), int(margin), bottomMargin-cc.Height)
-
-	return dc, nil
-}
-
-func GetCounterCanvas(counter *counters.Counter, template *counters.CounterTemplate) (*gg.Context, error) {
-	dc, err := GetCanvasForCounter(counter, template)
-	if err != nil {
-		return nil, err
-	}
-
-	// Draw background image
-	if err = drawBackgroundImage(dc, counter.Settings); err != nil {
-		return nil, errors.Wrap(err, "error trying to draw background image")
-	}
-
-	// Draw images
-	if err = counters.DrawImagesOnCanvas(counter.Images, &counter.Settings, dc, counter.Width, counter.Height); err != nil {
-		return nil, errors.Wrap(err, "error trying to process image")
-	}
-
-	// Draw texts
-	counters.DrawTextsOnCanvas(counter.Texts, counter.Settings, dc, counter.Width, counter.Height)
-
-	// Draw guides
-	if template.DrawGuides {
-		guides, err := counters.DrawGuides(counter.Settings)
-		if err != nil {
-			return nil, err
-		}
-		dc.DrawImage(*guides, 0, 0)
-	}
 
 	return dc, nil
 }

@@ -148,6 +148,10 @@ func ApplyCounterWaterfallSettings(t *CounterTemplate) {
 				Merge(&t.Counters[counterIndex].Back.Texts[imageIndex].Settings, t.Settings)
 			}
 		}
+
+		if counter.Multiplier == 0 {
+			counter.Multiplier = 1
+		}
 	}
 }
 

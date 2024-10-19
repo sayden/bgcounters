@@ -1,10 +1,7 @@
 package counters
 
 import (
-	"bytes"
 	"image/color"
-	"io"
-	"os"
 	"testing"
 
 	"github.com/fogleman/gg"
@@ -56,20 +53,6 @@ func TestImageDraw(t *testing.T) {
 		err = testImage.Draw(testCanvas, 1, testImage.Settings)
 		assert.NoError(t, err)
 
-		byt := new(bytes.Buffer)
-		err = testCanvas.EncodePNG(byt)
-		assert.NoError(t, err)
-		assert.Equal(t, 13552, byt.Len(), "The image should have 13552 bytes but has %d bytes", byt.Len())
-
-		// Compare the buffer with the expected image
-		expectedImage, err := os.Open("testdata/image_draw_01.png")
-		assert.NoError(t, err, "The expected image should be present")
-		defer expectedImage.Close()
-
-		expectedBytes, err := io.ReadAll(expectedImage)
-		assert.NoError(t, err)
-		assert.Equal(t, 13552, len(expectedBytes), "The expected image (from the file, not the generated image) should have 13552 bytes but has %d bytes", byt.Len())
-
-		assert.Equal(t, expectedBytes, byt.Bytes())
+		testImageContent(t, "testdata/image_draw_01.png", 13552, testCanvas)
 	})
 }
