@@ -174,10 +174,10 @@ func ApplyCounterScaling(c *Counter, scaling float64) {
 	}
 
 	for i := range c.Texts {
-		ApplySettingsScaling(&c.Texts[i].Settings, scaling)
+		c.Texts[i].Settings.ApplySettingsScaling(scaling)
 	}
 
-	ApplySettingsScaling(&c.Settings, scaling)
+	c.Settings.ApplySettingsScaling(scaling)
 }
 
 func (c *Counter) EncodeCounter(w io.Writer, template *CounterTemplate) error {

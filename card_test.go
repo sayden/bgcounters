@@ -54,7 +54,7 @@ func TestApplyCardScaling(t *testing.T) {
 		},
 	}
 
-	applyCardScaling(template)
+	ApplyCardScaling(template)
 
 	assert.Equal(t, 1200, template.Settings.Width)
 	assert.Equal(t, 900, template.Settings.Height)

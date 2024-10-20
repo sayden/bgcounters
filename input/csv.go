@@ -94,7 +94,7 @@ func ReadCSVCounters(filepath string) (*counters.CounterTemplate, error) {
 	template.Settings.FontColor = color.White
 	template.Settings.ImageScaling = counters.IMAGE_SCALING_FIT_NONE
 
-	if err = counters.EnrichTemplate(&template); err != nil {
+	if err = template.EnrichTemplate(); err != nil {
 		return nil, errors.Wrap(err, "could not enrich template")
 	}
 

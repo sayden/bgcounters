@@ -132,7 +132,7 @@ func applyImageScaling(i *Image, scaling float64) {
 
 	i.StrokeWidth *= scaling
 
-	ApplySettingsScaling(&i.Settings, scaling)
+	i.Settings.ApplySettingsScaling(scaling)
 
 	// if i.Scale == 0 {
 	// 	i.Scale = scaling

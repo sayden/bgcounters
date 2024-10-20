@@ -36,10 +36,10 @@ func GetCanvas(settings *Settings, width, height int, t *CardsTemplate) (*gg.Con
 	return dc, nil
 }
 
-func applyCardScaling(t *CardsTemplate) {
+func ApplyCardScaling(t *CardsTemplate) {
 	for i := range t.Cards {
 		c := t.Cards[i]
-		ApplySettingsScaling(&c.Settings, t.Scaling)
+		c.Settings.ApplySettingsScaling(t.Scaling)
 
 		for j := range c.Areas {
 			ApplyCounterScaling(&c.Areas[j], t.Scaling)
@@ -50,9 +50,9 @@ func applyCardScaling(t *CardsTemplate) {
 		}
 
 		for j := range c.Texts {
-			ApplySettingsScaling(&c.Texts[j].Settings, t.Scaling)
+			c.Texts[j].Settings.ApplySettingsScaling(t.Scaling)
 		}
 	}
 
-	ApplySettingsScaling(&t.Settings, t.Scaling)
+	t.Settings.ApplySettingsScaling(t.Scaling)
 }

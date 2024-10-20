@@ -41,7 +41,8 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 		return errors.Wrap(err, "could not read input file")
 	}
 
-	if err := counters.ValidateSchemaAtPath(Cli.Json.InputPath); err != nil {
+	// TODO: Check if the input is a CounterTemplate or a CardTemplate
+	if err := counters.ValidateSchemaAtPath[counters.CounterTemplate](Cli.Json.InputPath); err != nil {
 		return err
 	}
 

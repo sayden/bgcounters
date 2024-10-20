@@ -23,7 +23,8 @@ func jsonToCards() (err error) {
 }
 
 func jsonToAsset(inputPath, outputPath string) (err error) {
-	if err := counters.ValidateSchemaAtPath(inputPath); err != nil {
+	// TODO: Check if the input is a CounterTemplate or a CardTemplate
+	if err := counters.ValidateSchemaAtPath[counters.CounterTemplate](inputPath); err != nil {
 		return errors.Wrap(err, "schema validation failed during jsonToAsset")
 	}
 

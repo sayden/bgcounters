@@ -1,5 +1,12 @@
 package counters
 
+import (
+	"encoding/json"
+
+	"github.com/creasty/defaults"
+	"github.com/pkg/errors"
+)
+
 // CardsTemplate is the template sheet (usually A4) to place cards on top in grid fashion
 type CardsTemplate struct {
 	Settings
@@ -32,9 +39,34 @@ type CardsExtra struct {
 	BackImage         string  `json:"back_image,omitempty"`
 }
 
+func ParseCardTemplate(byt []byte) (t *CardsTemplate, err error) {
+	if err = ValidateSchemaBytes[CounterTemplate](byt); err != nil {
+		return nil, errors.Wrap(err, "JSON file is not valid")
+	}
+
+	t = &CardsTemplate{}
+	if err = defaults.Set(t); err != nil {
+		return nil, errors.Wrap(err, "could not apply defaults to counter template")
+	}
+
+	if err = json.Unmarshal(byt, &t); err != nil {
+		return nil, err
+	}
+
+	t.Settings.ApplySettingsScaling(t.Scaling)
+
+	t.ApplyCardWaterfallSettings()
+
+	if t.Scaling != 1.0 {
+		ApplyCardScaling(t)
+	}
+
+	return
+}
+
 // ApplyCardWaterfallSettings traverses the cards in the template applying the default settings to
 // value that are zero-valued
-func ApplyCardWaterfallSettings(t *CardsTemplate) {
+func (t *CardsTemplate) ApplyCardWaterfallSettings() {
 	SetColors(&t.Settings)
 
 	for cardsIndex := range t.Cards {
