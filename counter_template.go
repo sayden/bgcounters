@@ -12,7 +12,7 @@ import (
 type CounterTemplate struct {
 	Settings
 
-	WorkingDirectory string `json:"working_directory,omitempty" default:"."`
+	WorkingDirectory string `json:"working_directory,omitempty"`
 
 	Rows    int `json:"rows,omitempty" default:"2" jsonschema_description:"Number of rows, required when creating tiled based sheets for printing or TTS"`
 	Columns int `json:"columns,omitempty" default:"2" jsonschema_description:"Number of columns, required when creating tiled based sheets for printing or TTS"`
