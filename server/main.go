@@ -33,6 +33,7 @@ type responseMutex struct {
 	response
 }
 
+var startingFolder, _ = os.Getwd()
 var globalResponse responseMutex
 
 func main() {
@@ -49,7 +50,9 @@ func main() {
 
 	ch := make(chan bool)
 	router.POST("/code", handlerCode(ch))
-	router.GET("/render", func(c *gin.Context) { c.HTML(http.StatusOK, "render.html", nil) })
+	router.GET("/render", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "render.html", nil)
+	})
 	router.GET("/listen", handlerListen(ch))
 	router.GET("/state", func(c *gin.Context) {
 		globalResponse.Lock()
@@ -114,6 +117,12 @@ func handlerListen(ch <-chan bool) func(c *gin.Context) {
 
 func handlerCode(ch chan<- bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		defer func() {
+			if err := os.Chdir(startingFolder); err != nil {
+				log.Error(err)
+			}
+		}()
+
 		byt, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			log.Error(err)
@@ -130,18 +139,6 @@ func handlerCode(ch chan<- bool) func(c *gin.Context) {
 		buf := new(bytes.Buffer)
 		wc := base64.NewEncoder(base64.StdEncoding, buf)
 		defer wc.Close()
-
-		// Capture current working directory
-		cwd, err := os.Getwd()
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
-		// Restore working directory after the function ends
-		defer func() {
-			if err = os.Chdir(cwd); err != nil {
-				log.Error(err)
-			}
-		}()
 
 		response, err := generateCounter(byt)
 		if err != nil {
