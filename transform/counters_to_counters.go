@@ -8,16 +8,16 @@ import (
 type CountersToCountersConfig struct {
 	OriginalCounterTemplate *counters.CounterTemplate
 	OutputPathInTemplate    string
-	CounterBuilder          counters.CounterBuilder
+	CounterTransformer      counters.CounterTransfomer
 }
 
-func CountersToCounters(cfg *CountersToCountersConfig) (*counters.CounterTemplate, error) {
+func (cfg *CountersToCountersConfig) CountersToCounters() (*counters.CounterTemplate, error) {
 	cfg.OriginalCounterTemplate.OutputFolder = cfg.OutputPathInTemplate
 
 	finalOutputCounters := make([]counters.Counter, 0)
 
 	for _, counter := range cfg.OriginalCounterTemplate.Counters {
-		newCounter, err := cfg.CounterBuilder.ToNewCounter(&counter)
+		newCounter, err := cfg.CounterTransformer.ToNewCounter(&counter)
 		if err != nil {
 			return nil, errors.Wrap(err, "error trying to build counter")
 		}

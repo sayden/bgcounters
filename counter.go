@@ -28,16 +28,18 @@ type Counter struct {
 
 // TODO This Extra contains data from all projects
 type Extra struct {
-	PublicIcon         *imageExtraData `json:"public_icon,omitempty"`
-	CardImage          *imageExtraData `json:"card_image,omitempty"`
-	SkipCardGeneration bool            `json:"skip_card_generation,omitempty"`
-	Title              string          `json:"title,omitempty"`
-	Cost               int             `json:"cost,omitempty"`
-	Side               string          `json:"side,omitempty"`
-	TitlePosition      *int            `json:"title_position,omitempty"`
+	// PublicIcon in a FOW counter is the visible icon for the enemy. Imagine an icon for the back
+	// of a block in a Columbia game
+	PublicIcon         *Image `json:"public_icon,omitempty"`
+	CardImage          *Image `json:"card_image,omitempty"`
+	SkipCardGeneration bool   `json:"skip_card_generation,omitempty"`
+	Title              string `json:"title,omitempty"`
+	Cost               int    `json:"cost,omitempty"`
+	Side               string `json:"side,omitempty"`
+	TitlePosition      *int   `json:"title_position,omitempty"`
 }
 
-type imageExtraData struct {
+type ImageExtraData struct {
 	// the path to find the image file
 	Path string `json:"path,omitempty"`
 

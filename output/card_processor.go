@@ -25,6 +25,18 @@ type cardProcessor struct {
 	cardCanvas *gg.Context
 }
 
+/*
+processCard processes a single card by merging its settings with the template settings,
+drawing the background image, processing each area of the card, drawing texts, and optionally
+drawing borders. Finally, it draws the processed card onto the provided sheet at the specified
+column and row position.
+
+Parameters:
+- sheet: The context of the sheet where the card will be drawn.
+- card: The card to be processed.
+- columns: The column position on the sheet where the card will be drawn.
+- rows: The row position on the sheet where the card will be drawn.
+*/
 func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, columns, rows int) error {
 	counters.Merge(&card.Settings, c.template.Settings)
 	counters.SetColors(&card.Settings)

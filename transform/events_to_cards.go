@@ -2,7 +2,6 @@ package transform
 
 import (
 	"math/rand"
-	"time"
 
 	"github.com/imdario/mergo"
 	"github.com/sayden/counters"
@@ -47,7 +46,6 @@ func EventsToCards(cfg *EventsToCardsConfig) *counters.CardsTemplate {
 
 	cards := make([]counters.Card, 0)
 	for _, event := range cfg.Events {
-		rand.Seed(time.Now().UnixNano())
 		bgImage := cfg.Images[rand.Intn(len(cfg.Images))]
 
 		card := counters.Card{

@@ -6,7 +6,9 @@ import "github.com/sayden/counters"
 type SimpleFowCounterBuilder struct{}
 
 func (d *SimpleFowCounterBuilder) ToNewCounter(cc *counters.Counter) (*counters.Counter, error) {
-	if cc.Extra.PublicIcon.Path == "" {
+	defer func() { cc.Extra = nil }()
+
+	if cc.Extra != nil && cc.Extra.PublicIcon.Path == "" {
 		// No public image, no fow counter
 		return cc, nil
 	}

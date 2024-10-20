@@ -9,13 +9,13 @@ import (
 	"github.com/sayden/counters"
 )
 
-type QuotesToCardBuilder struct {
+type QuotesToCardTransformer struct {
 	Quotes         []counters.Quote
 	IndexForTitles int
 }
 
 // TODO It seems that 'destination' field can be omitted
-func (w *QuotesToCardBuilder) ToNewCard(cc counters.Counter, inputCardTemplate *counters.CardsTemplate) (card *counters.Card, err error) {
+func (w *QuotesToCardTransformer) ToNewCard(cc *counters.Counter, inputCardTemplate *counters.CardsTemplate) (card *counters.Card, err error) {
 	//Set a random quote
 	quote := w.Quotes[rand.Intn(len(w.Quotes))]
 
@@ -31,7 +31,7 @@ func (w *QuotesToCardBuilder) ToNewCard(cc counters.Counter, inputCardTemplate *
 	return card, nil
 }
 
-func (w *QuotesToCardBuilder) getCardAreas(cc counters.Counter, q counters.Quote) []counters.Counter {
+func (w *QuotesToCardTransformer) getCardAreas(cc *counters.Counter, q counters.Quote) []counters.Counter {
 	cc.Texts = nil
 	cc.Margins = 0
 	cc.BackgroundColor = ""
@@ -62,7 +62,7 @@ func (w *QuotesToCardBuilder) getCardAreas(cc counters.Counter, q counters.Quote
 
 	images, texts := w.getDownAreaCounterItems(cc, q)
 	return []counters.Counter{
-		cc, {
+		*cc, {
 			Images: images,
 			Texts:  texts,
 			Frame:  true,
@@ -70,12 +70,8 @@ func (w *QuotesToCardBuilder) getCardAreas(cc counters.Counter, q counters.Quote
 	}
 }
 
-func (w *QuotesToCardBuilder) getDownAreaCounterItems(cc counters.Counter, q counters.Quote) ([]counters.Image, []counters.Text) {
-	return []counters.Image{
-			{
-				Path: "assets/old_paper.jpg",
-			},
-		},
+func (w *QuotesToCardTransformer) getDownAreaCounterItems(cc *counters.Counter, q counters.Quote) ([]counters.Image, []counters.Text) {
+	return []counters.Image{{Path: "assets/old_paper.jpg"}},
 		[]counters.Text{
 			{
 				Settings: counters.Settings{
@@ -86,7 +82,7 @@ func (w *QuotesToCardBuilder) getDownAreaCounterItems(cc counters.Counter, q cou
 				String: cc.GetTextInPosition(w.IndexForTitles),
 			}, {
 				Settings: counters.Settings{
-					FontPath:    "/usr/share/fonts/TTF/VeraMoIt.ttf",
+					FontPath:    "assets/freesans.ttf",
 					StrokeWidth: 0,
 					FontHeight:  20,
 					FontColorS:  "black",
@@ -106,8 +102,8 @@ func (w *QuotesToCardBuilder) getDownAreaCounterItems(cc counters.Counter, q cou
 		}
 }
 
-func (q *QuotesToCardBuilder) getCardPrototype() (*counters.Card, error) {
-	c := &counters.Card{}
+func (q *QuotesToCardTransformer) getCardPrototype() (*counters.Card, error) {
+	c := counters.Card{}
 	if err := defaults.Set(&c); err != nil {
 		return nil, errors.Wrap(err, "could not set defaults to card")
 	}
@@ -119,5 +115,5 @@ func (q *QuotesToCardBuilder) getCardPrototype() (*counters.Card, error) {
 	c.StrokeColorS = "black"
 	c.StrokeWidth = 0
 
-	return c, nil
+	return &c, nil
 }

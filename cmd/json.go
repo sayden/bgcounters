@@ -92,13 +92,11 @@ func (i *JsonOutput) Run(ctx *kong.Context) error {
 			}
 
 			// JSON counters to Back Counters
-			finalCounters, err := transform.CountersToCounters(
-				&transform.CountersToCountersConfig{
-					OriginalCounterTemplate: newTempl,
-					OutputPathInTemplate:    Cli.Json.Destination,
-					CounterBuilder:          &transform.StepLossBackCounterBuilder{},
-				},
-			)
+			ctc := &transform.CountersToCountersConfig{
+				OriginalCounterTemplate: newTempl,
+				OutputPathInTemplate:    Cli.Json.Destination,
+				CounterTransformer:      &transform.StepLossBackCounterBuilder{}}
+			finalCounters, err := ctc.CountersToCounters()
 			if err != nil {
 				return errors.Wrap(err, "error trying to convert a counter template into another counter template")
 			}

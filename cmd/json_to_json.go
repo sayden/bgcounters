@@ -12,13 +12,12 @@ import (
 func jsonCountersToJsonFowCounters(counterTemplate *counters.CounterTemplate) (err error) {
 	logger.Info("creating fow counters")
 
-	t, err := transform.CountersToCounters(
-		&transform.CountersToCountersConfig{
-			OriginalCounterTemplate: counterTemplate,
-			OutputPathInTemplate:    Cli.Json.Destination,
-			CounterBuilder:          &transform.SimpleFowCounterBuilder{},
-		},
-	)
+	ctc := &transform.CountersToCountersConfig{
+		OriginalCounterTemplate: counterTemplate,
+		OutputPathInTemplate:    Cli.Json.Destination,
+		CounterTransformer:      &transform.SimpleFowCounterBuilder{},
+	}
+	t, err := ctc.CountersToCounters()
 	if err != nil {
 		return errors.Wrap(err, "error trying to convert a counter template into another counter template")
 	}
@@ -40,16 +39,15 @@ func jsonCountersToJsonCards(counterTemplate *counters.CounterTemplate) (err err
 		logger.Fatal("could not read input file", "file", Cli.Json.CardTemplateFilepath, "error", err)
 	}
 
-	cards, err := transform.CountersToCards(
-		&transform.CountersToCardsConfig{
-			CountersTemplate: counterTemplate,
-			CardTemplate:     cardsTemplate,
-			CardBuilder: &transform.QuotesToCardBuilder{
-				Quotes:         qs,
-				IndexForTitles: counterTemplate.PositionNumberForFilename,
-			},
+	ctc := &transform.CountersToCardsConfig{
+		CountersTemplate: counterTemplate,
+		CardTemplate:     cardsTemplate,
+		CounterTransformer: &transform.QuotesToCardTransformer{
+			Quotes:         qs,
+			IndexForTitles: counterTemplate.PositionNumberForFilename,
 		},
-	)
+	}
+	cards, err := ctc.CountersToCards()
 
 	if err != nil {
 		return err
