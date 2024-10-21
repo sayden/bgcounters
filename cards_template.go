@@ -26,7 +26,7 @@ type CardsTemplate struct {
 	Scaling float64 `json:"scaling,omitempty" default:"1.0"`
 
 	Cards           []Card `json:"cards"`
-	MaxCardsPerFile int    `json:"max_cards_per_file"`
+	MaxCardsPerFile int    `json:"max_cards_per_file,omitempty"`
 
 	Extra CardsExtra `json:",omitempty"`
 }
@@ -40,7 +40,7 @@ type CardsExtra struct {
 }
 
 func ParseCardTemplate(byt []byte) (t *CardsTemplate, err error) {
-	if err = ValidateSchemaBytes[CounterTemplate](byt); err != nil {
+	if err = ValidateSchemaBytes[CardsTemplate](byt); err != nil {
 		return nil, errors.Wrap(err, "JSON file is not valid")
 	}
 
