@@ -20,8 +20,7 @@ func newCardProcessor(cfg *cardProcessorConfig) *cardProcessor {
 }
 
 type cardProcessor struct {
-	template *counters.CardsTemplate
-
+	template   *counters.CardsTemplate
 	cardCanvas *gg.Context
 }
 
@@ -64,15 +63,11 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 	// Process each area on the text
 	y := c.template.Margins
 
-	for areaIndex, area := range card.Areas {
+	for areaIndex, areaCounter := range card.Areas {
 		isLastAreaOfCard := areaIndex != numberOfAreas
 		card.Areas[areaIndex].Height = int(math.Floor(areasHeights[areaIndex]))
 
-		areaProc := newAreaProcessor(&areaProcessorConfig{
-			area:                 &area,
-			calculatedAreaHeight: int(math.Floor(areasHeights[areaIndex])),
-			isLastArea:           isLastAreaOfCard,
-		})
+		areaProc := newAreaProcessor(&areaCounter, int(math.Floor(areasHeights[areaIndex])), isLastAreaOfCard)
 		if err = areaProc.processArea(card, c.template); err != nil {
 			return err
 		}
@@ -93,6 +88,20 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 	sheet.DrawImage(c.cardCanvas.Image(), columns*card.Width, rows*card.Height)
 
 	return nil
+}
+
+func (c *cardProcessor) maybeDrawBorders(card *counters.Card) {
+	borderColorIsSet := card.Settings.BorderColor != nil
+	borderWidthIsSet := card.Settings.BorderWidth != 0
+
+	if borderColorIsSet && borderWidthIsSet {
+		c.cardCanvas.Push()
+		c.cardCanvas.SetColor(card.Settings.BorderColor)
+		c.cardCanvas.SetLineWidth(card.Settings.BorderWidth)
+		c.cardCanvas.DrawRectangle(0, 0, float64(card.Settings.Width), float64(card.Settings.Height))
+		c.cardCanvas.Stroke()
+		c.cardCanvas.Pop()
+	}
 }
 
 func getAreasHeights(areas []counters.Counter, parentHeight int, margins float64) (hs []float64) {
@@ -119,18 +128,4 @@ func getAreasHeights(areas []counters.Counter, parentHeight int, margins float64
 	}
 
 	return
-}
-
-func (c *cardProcessor) maybeDrawBorders(card *counters.Card) {
-	borderColorIsSet := card.Settings.BorderColor != nil
-	borderWidthIsSet := card.Settings.BorderWidth != 0
-
-	if borderColorIsSet && borderWidthIsSet {
-		c.cardCanvas.Push()
-		c.cardCanvas.SetColor(card.Settings.BorderColor)
-		c.cardCanvas.SetLineWidth(card.Settings.BorderWidth)
-		c.cardCanvas.DrawRectangle(0, 0, float64(card.Settings.Width), float64(card.Settings.Height))
-		c.cardCanvas.Stroke()
-		c.cardCanvas.Pop()
-	}
 }

@@ -145,7 +145,21 @@ func (c *Counter) Canvas(withGuides bool) (*gg.Context, error) {
 		canvas.DrawImage(*guides, 0, 0)
 	}
 
+	// Draw borders
+	if c.BorderWidth > 0 {
+		c.drawBorders(canvas)
+	}
+
 	return canvas, nil
+}
+
+func (a *Counter) drawBorders(canvas *gg.Context) {
+	canvas.Push()
+	canvas.SetColor(a.Settings.BorderColor)
+	canvas.SetLineWidth(a.Settings.BorderWidth)
+	canvas.DrawRectangle(0, 0, float64(a.Settings.Width), float64(a.Settings.Height))
+	canvas.Stroke()
+	canvas.Pop()
 }
 
 func (c *Counter) canvas() (*gg.Context, error) {

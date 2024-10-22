@@ -1,22 +1,21 @@
 package output
 
 import (
+	"image/color"
+
 	"github.com/fogleman/gg"
 	"github.com/pkg/errors"
 	"github.com/sayden/counters"
 )
 
 type areaProcessorConfig struct {
-	area                 *counters.Counter
-	calculatedAreaHeight int
-	isLastArea           bool
 }
 
-func newAreaProcessor(c *areaProcessorConfig) *areaProcessor {
+func newAreaProcessor(area *counters.Counter, calculatedAreaHeight int, isLastArea bool) *areaProcessor {
 	return &areaProcessor{
-		Counter:              c.area,
-		calculatedAreaHeight: c.calculatedAreaHeight,
-		isLastArea:           c.isLastArea,
+		Counter:              area,
+		calculatedAreaHeight: calculatedAreaHeight,
+		isLastArea:           isLastArea,
 	}
 }
 
@@ -29,14 +28,12 @@ type areaProcessor struct {
 	isLastArea bool
 }
 
-// processArea draw images and texts into a new canvas, stored in a.areaCanvas
-func (a *areaProcessor) processArea(card *counters.Card, template *counters.CardsTemplate) error {
+func (a *areaProcessor) processArea(card *counters.Card, template *counters.CardsTemplate) (err error) {
 	counters.Merge(&a.Settings, card.Settings)
 
 	a.Width = (template.Width) - int(template.Margins*2)
 	a.Height = a.calculatedAreaHeight
 
-	var err error
 	if a.areaCanvas, err = counters.GetCanvas(&a.Settings, a.Width, a.Height, template); err != nil {
 		return errors.Wrap(err, "error trying to create a canvas")
 	}
@@ -50,14 +47,21 @@ func (a *areaProcessor) processArea(card *counters.Card, template *counters.Card
 	}
 
 	if !a.isLastArea && a.Frame {
-		drawFrame(a.areaCanvas, a.BorderWidth, a.BorderColor)
-	}
-
-	if !a.Settings.SkipBorders {
-		a.drawBorders()
+		a.drawFrame(a.BorderWidth, a.BorderColor)
 	}
 
 	return nil
+}
+
+func (a *areaProcessor) drawFrame(w float64, col color.Color) {
+	a.areaCanvas.Push()
+	a.areaCanvas.SetColor(col)
+	a.areaCanvas.SetLineWidth(w)
+	frameX := float64(a.areaCanvas.Width())
+	frameY := float64(a.areaCanvas.Height())
+	a.areaCanvas.DrawRectangle(0, 0, frameX, frameY)
+	a.areaCanvas.Stroke()
+	a.areaCanvas.Pop()
 }
 
 // drawOnCard draw the area canvas on the card canvas

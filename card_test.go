@@ -2,22 +2,23 @@ package counters
 
 import (
 	"image/color"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetCanvas(t *testing.T) {
+	width := 800
+	height := 600
 	settings := &Settings{
 		FontPath:   "assets/freesans.ttf",
 		FontHeight: 12,
 		BgColor:    color.RGBA{255, 255, 255, 255},
-		Width:      800,
-		Height:     600,
+		Width:      width,
+		Height:     height,
 		FontColorS: "#000000",
 	}
-	width := 800
-	height := 600
 	template := &CardsTemplate{
 		Settings: *settings,
 	}
@@ -25,6 +26,23 @@ func TestGetCanvas(t *testing.T) {
 	canvas, err := GetCanvas(settings, width, height, template)
 	assert.NoError(t, err)
 	assert.NotNil(t, canvas)
+}
+
+func TestToImage(t *testing.T) {
+	byt, err := os.ReadFile("./testdata/card_template.json")
+	if !assert.NoError(t, err) {
+		t.Fatal(err)
+	}
+
+	template, err := ParseCardTemplate(byt)
+	if !assert.NoError(t, err) {
+		t.Fatal(err)
+	}
+
+	f, _ := os.Create("/tmp/test.png")
+	defer f.Close()
+	err = template.Cards[0].EncodeImage(f, template)
+	assert.NoError(t, err)
 }
 
 func TestApplyCardScaling(t *testing.T) {

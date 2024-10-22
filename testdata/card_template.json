@@ -1,18 +1,39 @@
 {
   "rows": 7,
   "columns": 10,
-  "height": 1200,
-  "width": 800,
-  "font_height": 70,
+  "height": 320,
+  "width": 280,
+  "font_height": 12,
+  "font_path": "assets/freesans.ttf",
   "margins": 20,
-  "border_width": 20,
+  "border_width": 0,
   "border_color": "black",
-  "mode": "tiles",
-  "draw_guides": false,
   "background_color": "white",
   "font_color": "black",
-  "image_scaling": "fitHeight",
   "stroke_color": "black",
   "stroke_width": 0,
-  "cards": []
+  "cards": [
+    {
+      "background_image": "assets/old_paper.jpg",
+      "texts": [{ "string": "text1", "margins": 40, "position": 6 }],
+      "areas": [
+        {
+          "background_image": "",
+          "frame": true,
+          "texts": [{ "string": "area1" }],
+          "images": [{ "path": "assets/binoculars.png", "scale": 0.5 }],
+          "position": 3,
+          "font_height": 15,
+          "height": 120,
+          "background_color": "lightgray"
+        },
+        {
+          "background_color": "white",
+          "texts": [{ "string": "area2" }],
+          "position": 11,
+          "font_height": 10
+        }
+      ]
+    }
+  ]
 }

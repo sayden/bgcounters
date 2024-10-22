@@ -18,7 +18,13 @@ func CardsToPNG(template *counters.CardsTemplate) error {
 	for _, card := range template.Cards {
 		totalCards += card.Multiplier
 	}
-	proc := newSheetProcessor(template)
+
+	var (
+		rows, columns int
+		cards         []*counters.Card
+		currentIndex  int
+		n             int
+	)
 
 	log.Infof("Generating a total of %d cards in sheets of %d cards", totalCards, template.Rows*template.Columns)
 
@@ -33,9 +39,19 @@ func CardsToPNG(template *counters.CardsTemplate) error {
 			cardCanvas: sheet,
 		})
 
-		n, err := proc.processAll(sheet, cardProc)
-		if err != nil {
-			return err
+	processing:
+		for row := 0; row < rows; row++ {
+			for col := 0; col < columns; col++ {
+				if currentIndex >= len(cards) {
+					break processing
+				}
+
+				card := cards[currentIndex]
+				if err := cardProc.processCard(sheet, card, col, row); err != nil {
+					return errors.Wrap(err, "error trying to process card")
+				}
+				currentIndex++
+			}
 		}
 
 		outputPath := fmt.Sprintf(template.OutputPath, sheetFileNumber)
@@ -61,46 +77,6 @@ func CardsToPNG(template *counters.CardsTemplate) error {
 	return nil
 }
 
-type sheetProcessor struct {
-	rows, columns int
-	cards         []*counters.Card
-	currentIndex  int
-}
-
-func newSheetProcessor(template *counters.CardsTemplate) *sheetProcessor {
-	cards := make([]*counters.Card, 0, len(template.Cards))
-	for _, card := range template.Cards {
-		for i := 0; i < card.Multiplier; i++ {
-			c := card
-			cards = append(cards, &c)
-		}
-	}
-
-	return &sheetProcessor{
-		rows:    template.Rows,
-		columns: template.Columns,
-		cards:   cards,
-	}
-}
-
-func (s *sheetProcessor) processAll(sheet *gg.Context, processor *cardProcessor) (int, error) {
-	for row := 0; row < s.rows; row++ {
-		for col := 0; col < s.columns; col++ {
-			if s.currentIndex >= len(s.cards) {
-				return s.currentIndex, nil
-			}
-
-			card := s.cards[s.currentIndex]
-			if err := processor.processCard(sheet, card, col, row); err != nil {
-				return 0, errors.Wrap(err, "error trying to process card")
-			}
-			s.currentIndex++
-		}
-	}
-
-	return s.currentIndex, nil
-}
-
 func createOutputCanvas(template *counters.CardsTemplate) (*gg.Context, error) {
 	width := template.Columns * template.Width
 	height := template.Rows * template.Height
@@ -114,15 +90,4 @@ func createOutputCanvas(template *counters.CardsTemplate) (*gg.Context, error) {
 	sheet.Fill()
 
 	return sheet, nil
-}
-
-func drawFrame(c *gg.Context, w float64, col color.Color) {
-	c.Push()
-	c.SetColor(col)
-	c.SetLineWidth(w)
-	frameX := float64(c.Width())
-	frameY := float64(c.Height())
-	c.DrawRectangle(0, 0, frameX, frameY)
-	c.Stroke()
-	c.Pop()
 }

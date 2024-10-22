@@ -44,9 +44,6 @@ func newGlobalState(template *counters.CounterTemplate, canvas *gg.Context) *glo
 //
 // Parameters:
 // - template: A pointer to a CounterTemplate which contains the configuration for the counters.
-//
-// Returns:
-// - error: An error if something goes wrong during the process, otherwise nil.
 func CountersToPNG(template *counters.CounterTemplate) error {
 	var canvas *gg.Context
 	if template.Mode == counters.TEMPLATE_MODE_TILES {
@@ -61,8 +58,7 @@ func CountersToPNG(template *counters.CounterTemplate) error {
 	_ = os.MkdirAll(template.OutputFolder, 0750)
 
 	var (
-		total = 0
-
+		total      = 0
 		counterPos = 0
 		row        = 0
 	)

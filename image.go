@@ -124,7 +124,7 @@ func applyImageScaling(i *Image, scaling float64) {
 
 	i.BorderWidth *= scaling
 	if i.BorderWidth < 1 {
-		i.BorderWidth = 1
+		i.BorderWidth = 0
 	}
 
 	i.XShift *= scaling

@@ -10,7 +10,10 @@ import (
 	"github.com/thehivecorporation/log"
 )
 
-// Settings are used in counters and cards. Represents data required to draw and position a bounding box into a container
+// Template Settings
+//
+//	Counter / Card Settings
+//		Image / Text Settings
 type Settings struct {
 	Width  int `json:"width,omitempty"`
 	Height int `json:"height,omitempty"`
@@ -56,8 +59,6 @@ type Settings struct {
 
 	Position int `json:"position,omitempty"`
 
-	SkipBorders bool `json:"skip_borders,omitempty"`
-
 	Skip bool `json:"skip,omitempty"`
 }
 
@@ -76,7 +77,7 @@ func (s *Settings) ApplySettingsScaling(scaling float64) {
 
 	s.BorderWidth *= scaling
 	if s.BorderWidth < 1 {
-		s.BorderWidth = 1
+		s.BorderWidth = 0
 	}
 
 	s.XShift *= scaling
