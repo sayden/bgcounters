@@ -37,10 +37,12 @@ Parameters:
 - rows: The row position on the sheet where the card will be drawn.
 */
 func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, columns, rows int) error {
-	counters.Merge(&card.Settings, c.template.Settings)
-	counters.SetColors(&card.Settings)
+	err := counters.Mergev2(&card.Settings, &c.template.Settings)
+	if err != nil {
+		return err
+	}
+	// counters.SetColors(&card.Settings)
 
-	var err error
 	c.cardCanvas, err = counters.GetCanvas(&card.Settings, c.template.Width, c.template.Height, c.template)
 	if err != nil {
 		return err
@@ -50,8 +52,7 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 		return err
 	}
 
-	err = card.Images.DrawImagesOnCanvas(&card.Settings, c.cardCanvas, card.Width, card.Height)
-	if err != nil {
+	if err = card.Images.DrawImagesOnCanvas(&card.Settings, c.cardCanvas, card.Width, card.Height); err != nil {
 		return err
 	}
 	// Height when all areas have the same height
@@ -59,9 +60,14 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 
 	//calculatedAreaHeight := (float64(template.Height) - (template.Margins * 2)) / float64(numberOfAreas)
 
-	areasHeights := getAreasHeights(card.Areas, card.Height, card.Margins)
+	areasHeights := getAreasHeights(card.Areas, card.Height, *card.Margins)
 	// Process each area on the text
 	y := c.template.Margins
+
+	canvas, err := card.ToCanvas(c.template)
+	if err != nil {
+		return err
+	}
 
 	for areaIndex, areaCounter := range card.Areas {
 		isLastAreaOfCard := areaIndex != numberOfAreas
@@ -73,13 +79,13 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 		}
 
 		x := c.template.Margins
-		if err = areaProc.drawOnCard(c.template, c.cardCanvas, x, y); err != nil {
+		if err = areaProc.drawOnCard(c.template, c.cardCanvas, *x, *y); err != nil {
 			return err
 		}
-		y += areasHeights[areaIndex]
+		*y += areasHeights[areaIndex]
 	}
 
-	if err = card.Texts.DrawTextsOnCanvas(card.Settings, c.cardCanvas, card.Width, card.Height); err != nil {
+	if err = card.Texts.DrawTextsOnCanvas(&card.Settings, c.cardCanvas, card.Width, card.Height); err != nil {
 		return err
 	}
 
@@ -92,12 +98,12 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 
 func (c *cardProcessor) maybeDrawBorders(card *counters.Card) {
 	borderColorIsSet := card.Settings.BorderColor != nil
-	borderWidthIsSet := card.Settings.BorderWidth != 0
+	borderWidthIsSet := *card.Settings.BorderWidth != 0
 
 	if borderColorIsSet && borderWidthIsSet {
 		c.cardCanvas.Push()
 		c.cardCanvas.SetColor(card.Settings.BorderColor)
-		c.cardCanvas.SetLineWidth(card.Settings.BorderWidth)
+		c.cardCanvas.SetLineWidth(*card.Settings.BorderWidth)
 		c.cardCanvas.DrawRectangle(0, 0, float64(card.Settings.Width), float64(card.Settings.Height))
 		c.cardCanvas.Stroke()
 		c.cardCanvas.Pop()

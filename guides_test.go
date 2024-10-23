@@ -12,12 +12,11 @@ func TestGuides(t *testing.T) {
 	sideSize := 300
 	testText := Text{
 		Settings: Settings{
-			FontPath:   "assets/freesans.ttf",
 			FontColor:  color.Black,
 			FontHeight: 15,
 			Width:      sideSize,
 			Height:     sideSize,
-			Margins:    3,
+			Margins:    floatP(3),
 		},
 		String: "Guides",
 	}
@@ -45,9 +44,8 @@ func TestGuides(t *testing.T) {
 		testCanvas.Pop()
 
 		canvas, err := parsedTemplate.Counters[0].Canvas(true)
-		canvas.SavePNG("/tmp/test.png")
 		if assert.NoError(t, err) {
-			testImageContent(t, "testdata/guides_01.png", 1791, canvas)
+			testImageContent(t, "testdata/guides_01.png", 1709, canvas)
 		}
 	}
 

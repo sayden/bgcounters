@@ -32,14 +32,18 @@ func (w *QuotesToCardTransformer) ToNewCard(cc *counters.Counter, inputCardTempl
 }
 
 func (w *QuotesToCardTransformer) getCardAreas(cc *counters.Counter, q counters.Quote) []counters.Counter {
+	margins := 0.0
+	backgroundColor := ""
 	cc.Texts = nil
-	cc.Margins = 0
-	cc.BackgroundColor = ""
+	cc.Margins = &margins
+	cc.BackgroundColor = &backgroundColor
 
 	// Modify images in incoming counter
+	xShift := 0.0
+	yShift := 0.0
 	for i, img := range cc.Images {
-		cc.Images[i].YShift = 0
-		cc.Images[i].XShift = 0
+		cc.Images[i].YShift = &yShift
+		cc.Images[i].XShift = &xShift
 
 		switch img.Position {
 		case 0:
@@ -76,24 +80,24 @@ func (w *QuotesToCardTransformer) getDownAreaCounterItems(cc *counters.Counter, 
 			{
 				Settings: counters.Settings{
 					AvoidClipping: true,
-					StrokeWidth:   5,
+					StrokeWidth:   floatP(5),
 					Position:      3,
 				},
 				String: cc.GetTextInPosition(w.IndexForTitles),
 			}, {
 				Settings: counters.Settings{
 					FontPath:    "assets/freesans.ttf",
-					StrokeWidth: 0,
+					StrokeWidth: floatP(0),
 					FontHeight:  20,
 					FontColorS:  "black",
 				},
 				String: q.Quote,
 			}, {
 				Settings: counters.Settings{
-					StrokeWidth:   0,
+					StrokeWidth:   floatP(0),
 					FontHeight:    30,
 					FontColorS:    "black",
-					YShift:        -70,
+					YShift:        floatP(-70),
 					AvoidClipping: true,
 					Position:      9,
 				},
@@ -109,11 +113,11 @@ func (q *QuotesToCardTransformer) getCardPrototype() (*counters.Card, error) {
 	}
 
 	c.BorderColorS = "black"
-	c.BackgroundColor = "#faebd7"
+	c.BackgroundColor = stringP("#faebd7")
 	c.FontColorS = "white"
 	c.ImageScaling = "fitHeight"
 	c.StrokeColorS = "black"
-	c.StrokeWidth = 0
+	c.StrokeWidth = floatP(0)
 
 	return &c, nil
 }

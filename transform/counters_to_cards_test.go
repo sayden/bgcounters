@@ -12,12 +12,12 @@ func TestCountersToCards(t *testing.T) {
 	counterTemplate := &counters.CounterTemplate{
 		Counters: []counters.Counter{
 			{
-				Settings: counters.Settings{Multiplier: 1},
+				Settings: counters.Settings{Multiplier: intP(1)},
 				Texts:    counters.Texts{{String: "Test Counter 1"}},
 			},
 			{
 				Extra:    &counters.Extra{SkipCardGeneration: true},
-				Settings: counters.Settings{Multiplier: 2},
+				Settings: counters.Settings{Multiplier: intP(2)},
 				Texts:    counters.Texts{{String: "Test Counter 2"}},
 			},
 		},

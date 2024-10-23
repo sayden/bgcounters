@@ -68,7 +68,7 @@ func CountersToPNG(template *counters.CounterTemplate) error {
 	// Progress bar
 	for _, c := range template.Counters {
 		if !c.Skip {
-			total += c.Multiplier
+			total += *c.Multiplier
 		}
 	}
 	prog := progress.New(progress.WithScaledGradient("#FF7CCB", "#FDFF8C"))
@@ -163,7 +163,7 @@ type imageWriter struct {
 // the multiplier to create more than one file with the same counter
 func (iw *imageWriter) createFile(counter *counters.Counter, gs *globalState, suffix string) error {
 	// Use sequencing of numbers or a position in the counter texts to name files
-	for i := 0; i < counter.Multiplier; i++ {
+	for i := 0; i < *counter.Multiplier; i++ {
 		counterFilename := counter.GetCounterFilename(iw.template.PositionNumberForFilename, suffix, gs.fileNumber, gs.filenamesInUse)
 		filepath := path.Join(iw.template.OutputFolder, counterFilename)
 		if counter.Skip {
@@ -184,7 +184,7 @@ func (iw *imageWriter) createFile(counter *counters.Counter, gs *globalState, su
 // createTiledFile creates a file with the counter image. Filenumber is the filename, a row and column pointer
 // is passed to be able to use the multiplier to create more than one counter in the same sheet
 func (iw *imageWriter) createTiledFile(counter *counters.Counter, gs *globalState) {
-	for i := 0; i < counter.Multiplier; i++ {
+	for i := 0; i < *counter.Multiplier; i++ {
 		gs.canvas.DrawImage(iw.canvas.Image(), gs.columns*counter.Width, gs.row*counter.Height)
 		gs.columns++
 		if gs.columns == iw.template.Columns {

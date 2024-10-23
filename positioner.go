@@ -7,9 +7,12 @@ import (
 
 type Positioner struct{}
 
-func (p *Positioner) GetAnchorPointsAndMaxWidth(pos int, def Settings) (float64, float64, float64, error) {
+func (p *Positioner) GetAnchorPointsAndMaxWidth(pos int, def *Settings) (float64, float64, float64, error) {
 	counterWidth := float64(def.Width)
-	offsetX := def.Margins + def.BorderWidth + def.XShift + def.StrokeWidth
+	offsetX := *def.Margins +
+		*def.BorderWidth +
+		*def.XShift +
+		*def.StrokeWidth
 	availableWidth := counterWidth - (offsetX * 2)
 
 	switch pos {
@@ -54,12 +57,12 @@ func (p *Positioner) GetAnchorPointsAndMaxWidth(pos int, def Settings) (float64,
 	}
 }
 
-func (p *Positioner) GetXYPosition(pos int, def Settings) (float64, float64, error) {
+func (p *Positioner) GetXYPosition(pos int, def *Settings) (float64, float64, error) {
 	counterWidth := float64(def.Width)
 	counterHeight := float64(def.Height)
 
-	offsetX := def.Margins + def.BorderWidth + def.StrokeWidth
-	offsetY := def.Margins + def.BorderWidth + def.StrokeWidth
+	offsetX := *def.Margins + *def.BorderWidth + *def.StrokeWidth
+	offsetY := *def.Margins + *def.BorderWidth + *def.StrokeWidth
 
 	centerVertical := counterHeight / 2
 	centerHorizontal := counterWidth / 2
@@ -73,62 +76,62 @@ func (p *Positioner) GetXYPosition(pos int, def Settings) (float64, float64, err
 	switch pos {
 	case 0:
 		// Center of the counter, space usually for image
-		return centerHorizontal + def.XShift, centerVertical + def.YShift, nil
+		return centerHorizontal + *def.XShift, centerVertical + *def.YShift, nil
 	case 1:
 		// Top left corner
-		return offsetX + def.XShift, offsetY + def.YShift, nil
+		return offsetX + *def.XShift, offsetY + *def.YShift, nil
 	case 2:
 		// Top left, at the right of the top-left corner
-		return topLeft + def.XShift, offsetY + def.YShift, nil
+		return topLeft + *def.XShift, offsetY + *def.YShift, nil
 	case 3:
 		// Top center
-		return centerHorizontal + def.XShift, offsetY + def.YShift, nil
+		return centerHorizontal + *def.XShift, offsetY + *def.YShift, nil
 	case 4:
 		// Top right, at the left of the top-right corner
-		return topRight + def.XShift, offsetY + def.YShift, nil
+		return topRight + *def.XShift, offsetY + *def.YShift, nil
 	case 5:
 		// Top right corner
-		return counterWidth - offsetX + def.XShift, offsetY + def.YShift, nil
+		return counterWidth - offsetX + *def.XShift, offsetY + *def.YShift, nil
 	case 6:
 		// Right slightly up, under the top right corner
-		return counterWidth - offsetX + def.XShift, leftAbove + def.YShift, nil
+		return counterWidth - offsetX + *def.XShift, leftAbove + *def.YShift, nil
 	case 7:
 		// Right
-		return counterWidth - offsetX + def.XShift, centerVertical + def.YShift, nil
+		return counterWidth - offsetX + *def.XShift, centerVertical + *def.YShift, nil
 	case 8:
 		// Right slightly down, over the bottom right corner
-		return counterWidth - offsetX + def.XShift, leftBelow + def.YShift, nil
+		return counterWidth - offsetX + *def.XShift, leftBelow + *def.YShift, nil
 	case 9:
 		// Bottom right corner
-		return counterWidth - offsetX + def.XShift, counterHeight - offsetY + def.YShift, nil
+		return counterWidth - offsetX + *def.XShift, counterHeight - offsetY + *def.YShift, nil
 	case 10:
 		// Bottom right, at the left of the bottom-right corner
-		return topRight + def.XShift, counterHeight - offsetY + def.YShift, nil
+		return topRight + *def.XShift, counterHeight - offsetY + *def.YShift, nil
 	case 11:
 		// Bottom
-		return centerHorizontal + def.XShift, counterHeight - offsetY + def.YShift, nil
+		return centerHorizontal + *def.XShift, counterHeight - offsetY + *def.YShift, nil
 	case 12:
 		//Bottom left, at the right of the bottom-left corner
-		return topLeft + def.XShift, counterHeight - offsetY + def.YShift, nil
+		return topLeft + *def.XShift, counterHeight - offsetY + *def.YShift, nil
 	case 13:
 		//Bottom left corner
-		return offsetX + def.XShift, counterHeight - offsetY + def.YShift, nil
+		return offsetX + *def.XShift, counterHeight - offsetY + *def.YShift, nil
 	case 14:
 		// Left down, over the bottom-left corner
-		return offsetX + def.XShift, leftBelow + def.YShift, nil
+		return offsetX + *def.XShift, leftBelow + *def.YShift, nil
 	case 15:
 		// Left
-		return offsetX + def.XShift, centerVertical + def.YShift, nil
+		return offsetX + *def.XShift, centerVertical + *def.YShift, nil
 	case 16:
 		// Left up, under the upper-left corner
-		return offsetX + def.XShift, leftAbove + def.YShift, nil
+		return offsetX + *def.XShift, leftAbove + *def.YShift, nil
 	default:
 		log.WithField("position", pos).Error("Position unknown. Valid positions are from 0 to 16 (both included)")
 		return 0, 0, errors.New("the position provided is not in the range 0-16")
 	}
 }
 
-func (p *Positioner) getObjectPositions(pos int, def Settings) (float64, float64, float64, float64, error) {
+func (p *Positioner) getObjectPositions(pos int, def *Settings) (float64, float64, float64, float64, error) {
 	ax, ay, _, err := p.GetAnchorPointsAndMaxWidth(pos, def)
 	if err != nil {
 		return 0, 0, 0, 0, err

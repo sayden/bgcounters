@@ -28,8 +28,6 @@ const (
 	DEFAULT_BORDER_WIDTH = 20
 	DEFAULT_BORDER_COLOR = "white"
 
-	testFile = "/tmp/test.png"
-
 	IMAGE_SCALING_FIT_NONE   = "none"
 	IMAGE_SCALING_FIT_WIDTH  = "fitWidth"
 	IMAGE_SCALING_FIT_HEIGHT = "fitHeight"

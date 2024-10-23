@@ -44,7 +44,7 @@ func TestJSONPrototypes(t *testing.T) {
 	}
 
 	newTempl, err := ParseCounterTemplate(byt)
-	if !assert.NoError(t, err, "could not parse the template") {
+	if !assert.NoError(t, err, "error parsing template") {
 		t.FailNow()
 	}
 
@@ -59,7 +59,7 @@ func TestJSONPrototypes(t *testing.T) {
 	// check the marshalling of the template to an expected byte slice
 	actualBytes, err := json.MarshalIndent(newTempl, "", "  ")
 	assert.NoError(t, err)
-	assert.Equal(t, 4265, len(actualBytes))
+	assert.Equal(t, 12621, len(actualBytes))
 
 	expectedFile, err := os.Open("./testdata/parse_template_01.json")
 	assert.NoError(t, err)
@@ -69,7 +69,7 @@ func TestJSONPrototypes(t *testing.T) {
 	assert.NoError(t, err)
 
 	// // ensure we are using the expected file and that it has not been altered by mistake
-	if !assert.Equal(t, 4265, len(expectedBytes), "expected file has been altered, aborting test") {
+	if !assert.Equal(t, 12621, len(expectedBytes), "expected file has been altered, aborting test") {
 		t.FailNow()
 	}
 

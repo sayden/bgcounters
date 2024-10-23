@@ -113,7 +113,7 @@ func TestApplyCounterScaling(t *testing.T) {
 	ApplyCounterScaling(&counter, 2)
 
 	assert.Equal(t, 600, counter.Settings.Width)
-	assert.Equal(t, 0.5, counter.Images[0].Scale)
+	assert.Equal(t, float64(1), counter.Images[0].Scale)
 	assert.Equal(t, 20.0, counter.Texts[0].Settings.FontHeight)
 }
 

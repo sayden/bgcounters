@@ -29,9 +29,12 @@ type areaProcessor struct {
 }
 
 func (a *areaProcessor) processArea(card *counters.Card, template *counters.CardsTemplate) (err error) {
-	counters.Merge(&a.Settings, card.Settings)
+	err = counters.Mergev2(&a.Settings, &card.Settings)
+	if err != nil {
+		return errors.Wrap(err, "error trying to merge settings")
+	}
 
-	a.Width = (template.Width) - int(template.Margins*2)
+	a.Width = (template.Width) - int(*template.Margins*2.0)
 	a.Height = a.calculatedAreaHeight
 
 	if a.areaCanvas, err = counters.GetCanvas(&a.Settings, a.Width, a.Height, template); err != nil {
@@ -42,12 +45,12 @@ func (a *areaProcessor) processArea(card *counters.Card, template *counters.Card
 		return errors.Wrap(err, "error trying to process image")
 	}
 
-	if err = a.Texts.DrawTextsOnCanvas(a.Settings, a.areaCanvas, a.Width, a.Height); err != nil {
+	if err = a.Texts.DrawTextsOnCanvas(&a.Settings, a.areaCanvas, a.Width, a.Height); err != nil {
 		return errors.Wrap(err, "error trying to draw text")
 	}
 
 	if !a.isLastArea && a.Frame {
-		a.drawFrame(a.BorderWidth, a.BorderColor)
+		a.drawFrame(*a.BorderWidth, a.BorderColor)
 	}
 
 	return nil
@@ -69,7 +72,21 @@ func (a *areaProcessor) drawOnCard(template *counters.CardsTemplate, cardCanvas 
 	cardCanvas.DrawImage(a.areaCanvas.Image(), int(x), int(y))
 
 	if template.DrawGuides {
-		guidesImage, err := counters.DrawGuides(a.Settings)
+		guidesImage, err := counters.DrawGuides(&a.Settings)
+		if err != nil {
+			return errors.Wrap(err, "error tyring to draw guides")
+		}
+		cardCanvas.DrawImage(*guidesImage, int(x), int(y))
+	}
+
+	return nil
+}
+
+func drawOnCard(template *counters.CardsTemplate, cardCanvas, image *gg.Context, x, y float64) error {
+	cardCanvas.DrawImage(image.Image(), int(x), int(y))
+
+	if template.DrawGuides {
+		guidesImage, err := counters.DrawGuides(&template.Settings)
 		if err != nil {
 			return errors.Wrap(err, "error tyring to draw guides")
 		}
@@ -82,7 +99,7 @@ func (a *areaProcessor) drawOnCard(template *counters.CardsTemplate, cardCanvas 
 func (a *areaProcessor) drawBorders() {
 	a.areaCanvas.Push()
 	a.areaCanvas.SetColor(a.Settings.BorderColor)
-	a.areaCanvas.SetLineWidth(a.Settings.BorderWidth)
+	a.areaCanvas.SetLineWidth(*a.Settings.BorderWidth)
 	a.areaCanvas.DrawRectangle(0, 0, float64(a.Settings.Width), float64(a.Settings.Height))
 	a.areaCanvas.Stroke()
 	a.areaCanvas.Pop()

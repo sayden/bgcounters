@@ -23,7 +23,7 @@ type Image struct {
 
 type Images []Image
 
-func (i *Image) Draw(dc *gg.Context, pos int, _ Settings) error {
+func (i *Image) Draw(dc *gg.Context, pos int) error {
 	img, err := gg.LoadImage(i.Path)
 	if err != nil {
 		log.WithField("image", i.Path).Error("error trying to load image in 'Image' item")
@@ -34,8 +34,8 @@ func (i *Image) Draw(dc *gg.Context, pos int, _ Settings) error {
 		img = CropToContent(img)
 	}
 
-	if i.Rotation != 0 {
-		img = imaging.Rotate(img, i.Rotation, color.Transparent)
+	if i.Rotation != nil && *i.Rotation != 0 {
+		img = imaging.Rotate(img, *i.Rotation, color.Transparent)
 	}
 
 	if i.ImageScaling == "" {
@@ -59,14 +59,15 @@ func (i *Image) Draw(dc *gg.Context, pos int, _ Settings) error {
 		// Do nothing, image untouched from original
 	}
 
-	x, y, ax, ay, err := i.getObjectPositions(pos, i.Settings)
+	x, y, ax, ay, err := i.getObjectPositions(pos, &i.Settings)
 	if err != nil {
 		return err
 	}
-	if i.ShadowDistance != 0 {
-		shadow := getShadowFromImage(img, i.ShadowDistance, i.ShadowSigma)
-		x1 := math.Floor(x + float64(i.ShadowDistance))
-		y1 := math.Floor(y + float64(i.ShadowDistance))
+
+	if i.ShadowDistance != nil && *i.ShadowDistance != 0 {
+		shadow := getShadowFromImage(img, *i.ShadowDistance, *i.ShadowSigma)
+		x1 := math.Floor(x + float64(*i.ShadowDistance))
+		y1 := math.Floor(y + float64(*i.ShadowDistance))
 		dc.DrawImageAnchored(shadow, int(x1), int(y1), ax, ay)
 	}
 
@@ -88,7 +89,7 @@ func (images Images) DrawImagesOnCanvas(s *Settings, areaCanvas *gg.Context, w, 
 		image.Width = w
 		image.Height = h
 
-		if err := image.Draw(areaCanvas, image.Position, image.Settings); err != nil {
+		if err := image.Draw(areaCanvas, image.Position); err != nil {
 			return errors.Wrap(err, "could not draw image")
 		}
 	}
@@ -116,27 +117,7 @@ func getShadowImageSize(img image.Image, shadowDistance int, sigma int) (int, in
 }
 
 func applyImageScaling(i *Image, scaling float64) {
-	i.Margins *= scaling
-
-	i.FontHeight *= scaling
-
-	i.ShadowDistance = int(scaling * float64(i.ShadowDistance))
-
-	i.BorderWidth *= scaling
-	if i.BorderWidth < 1 {
-		i.BorderWidth = 0
-	}
-
-	i.XShift *= scaling
-	i.YShift *= scaling
-
-	i.StrokeWidth *= scaling
+	i.Scale *= scaling
 
 	i.Settings.ApplySettingsScaling(scaling)
-
-	// if i.Scale == 0 {
-	// 	i.Scale = scaling
-	// } else {
-	// 	i.Scale *= scaling
-	// }
 }

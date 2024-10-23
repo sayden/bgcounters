@@ -26,13 +26,13 @@ type Texts []Text
 
 // DrawTextsOnCanvas draws the texts provided on areaCanvas at positions `w` and `h`
 // using the provided Settings
-func (texts Texts) DrawTextsOnCanvas(s Settings, areaCanvas *gg.Context, w, h int) error {
+func (texts Texts) DrawTextsOnCanvas(s *Settings, areaCanvas *gg.Context, w, h int) error {
 	for _, text := range texts {
-		Merge(&text.Settings, s)
+		Mergev2(&text.Settings, s)
 
 		text.Width = w
 		text.Height = h
-		err := text.Draw(areaCanvas, text.Position, text.Settings)
+		err := text.Draw(areaCanvas, text.Position, &text.Settings)
 		if err != nil {
 			return err
 		}
@@ -52,7 +52,7 @@ func (t *Text) GetAlignment() gg.Align {
 	}
 }
 
-func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
+func (t *Text) Draw(dc *gg.Context, pos int, settings *Settings) error {
 	dc.Push()
 	defer dc.Pop()
 
@@ -86,16 +86,16 @@ func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
 
 	centerVertical := float64(dc.Height()) / 2
 
-	if settings.StrokeWidth != 0 {
-		drawTextWrappedWithStroke(t.String, settings.StrokeWidth, centerVertical, 0, 0.5, maxWidthForPosition, temp, settings.FontColor, settings.StrokeWidth, settings.StrokeColor, t.GetAlignment())
+	if *settings.StrokeWidth != 0 {
+		drawTextWrappedWithStroke(t.String, *settings.StrokeWidth, centerVertical, 0, 0.5, maxWidthForPosition, temp, settings.FontColor, *settings.StrokeWidth, settings.StrokeColor, t.GetAlignment())
 	} else {
 		temp.DrawStringWrapped(t.String, 0, centerVertical, 0, 0.5, maxWidthForPosition, 2, t.GetAlignment())
 	}
 
 	img := temp.Image()
 
-	if settings.Rotation != 0 {
-		img = imaging.Rotate(img, settings.Rotation, color.Transparent)
+	if *settings.Rotation != 0 {
+		img = imaging.Rotate(img, *settings.Rotation, color.Transparent)
 	}
 
 	img = CropToContent(img)
@@ -105,8 +105,8 @@ func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
 		return errors.Wrap(err, "could not get a correct position")
 	}
 
-	if settings.ShadowDistance != 0 {
-		shadow := getShadowFromImage(img, t.ShadowDistance, t.ShadowSigma)
+	if *settings.ShadowDistance != 0 {
+		shadow := getShadowFromImage(img, *t.ShadowDistance, *t.ShadowSigma)
 		shadowCtx := gg.NewContextForImage(shadow)
 		shadowCtx.DrawImageAnchored(img, (shadowCtx.Width() / 2), (shadowCtx.Height() / 2), 0.5, 0.5)
 		img = shadowCtx.Image()
@@ -132,7 +132,7 @@ func (t *Text) Draw(dc *gg.Context, pos int, settings Settings) error {
 	return nil
 }
 
-func (t *Text) getTextDimensions(pos int, def Settings) (float64, float64, float64, float64, float64, error) {
+func (t *Text) getTextDimensions(pos int, def *Settings) (float64, float64, float64, float64, float64, error) {
 	ax, ay, maxWidth, err := t.GetAnchorPointsAndMaxWidth(pos, def)
 	if err != nil {
 		return 0, 0, 0, 0, 0, err

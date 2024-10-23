@@ -16,7 +16,7 @@ func CardsToPNG(template *counters.CardsTemplate) error {
 	// count the total amounts to card that will be processed
 	totalCards := 0
 	for _, card := range template.Cards {
-		totalCards += card.Multiplier
+		totalCards += *card.Multiplier
 	}
 
 	var (

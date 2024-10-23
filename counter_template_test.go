@@ -1,6 +1,7 @@
 package counters
 
 import (
+	"image/color"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -46,21 +47,31 @@ func TestExpandPrototypeCounterTemplate(t *testing.T) {
 	}
 }
 
+func intP(i int) *int {
+	return &i
+}
+
+func floatP(f float64) *float64 {
+	return &f
+}
+
 func TestApplyCounterWaterfallSettings(t *testing.T) {
+	white := "white"
 	ct := &CounterTemplate{
 		Settings: Settings{
 			Width:           100,
 			Height:          200,
 			FontHeight:      10,
+			FontPath:        "assets/freesans.ttf",
 			FontColorS:      "black",
-			BackgroundColor: "white",
-			Margins:         5,
-			StrokeWidth:     1,
+			BackgroundColor: &white,
+			Margins:         floatP(5),
+			StrokeWidth:     floatP(1),
 		},
 		Counters: []Counter{
 			{
 				Settings: Settings{
-					Margins:    10,
+					Margins:    floatP(10),
 					FontHeight: 20,
 				},
 				Texts: []Text{{String: "text"}},
@@ -68,22 +79,26 @@ func TestApplyCounterWaterfallSettings(t *testing.T) {
 		},
 	}
 
-	ct.ApplyCounterWaterfallSettings()
+	err := ct.ApplyCounterWaterfallSettings()
+	if !assert.NoError(t, err) {
+		t.Fatal()
+	}
 
 	assert.Equal(t, 20.0, ct.Counters[0].Settings.FontHeight)
-	assert.Equal(t, "black", ct.Counters[0].Settings.FontColorS)
-	assert.Equal(t, "white", ct.Counters[0].Settings.BackgroundColor)
-	assert.Equal(t, 20.0, ct.Counters[0].Texts[0].Settings.FontHeight)
+	assert.Equal(t, ColorFromStringOrDefault("black", color.Black), ct.Settings.FontColor)
+	assert.Equal(t, ColorFromStringOrDefault("black", color.Black), ct.Counters[0].Settings.FontColor)
+	assert.Equal(t, "white", *ct.Counters[0].Settings.BackgroundColor)
+	assert.Equal(t, 20.0, ct.Counters[0].Settings.FontHeight)
 	assert.Equal(t, 100, ct.Counters[0].Settings.Width)
 	assert.Equal(t, 200, ct.Counters[0].Settings.Height)
-	assert.Equal(t, 10.0, ct.Counters[0].Settings.Margins)
+	assert.Equal(t, 10.0, *ct.Counters[0].Settings.Margins)
 
 	// Override with zero values
-	ct.Counters[0].Settings.StrokeWidth = 0
+	ct.Counters[0].Settings.StrokeWidth = floatP(0)
 	ct.Counters[0].Settings.Width = 50
 	ct.ApplyCounterWaterfallSettings()
 
-	assert.Equal(t, 0.0, ct.Counters[0].Settings.StrokeWidth, "StrokeWidth should be 1 for CT "+
+	assert.Equal(t, 0.0, *ct.Counters[0].Settings.StrokeWidth, "StrokeWidth should be 1 for CT "+
 		"settings but 0 for counter because it was overriden")
 	assert.Equal(t, 50, ct.Counters[0].Settings.Width, "Width should be 50 for counter because it "+
 		"was overriden")

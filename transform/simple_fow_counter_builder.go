@@ -22,10 +22,9 @@ func (d *SimpleFowCounterBuilder) ToNewCounter(cc *counters.Counter) (*counters.
 		if image.Position == 0 {
 			image.Path = cc.Extra.PublicIcon.Path
 			image.Scale = cc.Extra.PublicIcon.Scale
-			image.YShift = 0
-			image.XShift = 0
+			image.YShift = floatP(0)
+			image.XShift = floatP(0)
 			validFowImagesInCounter = append(validFowImagesInCounter, image)
-			continue
 		}
 	}
 

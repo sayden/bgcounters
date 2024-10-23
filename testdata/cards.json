@@ -14,6 +14,7 @@
   "image_scaling": "fitHeight",
   "stroke_color": "black",
   "output_path": "generated/path",
+  "font_path": "assets/freesans.ttf",
   "extra": {
     "back_image": "../assets/old_paper.jpg"
   },

@@ -14,15 +14,29 @@ type EventsToCardsConfig struct {
 	GeneratedImageName string
 }
 
+func stringP(s string) *string {
+	return &s
+}
+
+func intP(i int) *int {
+	return &i
+}
+
+func floatP(f float64) *float64 {
+	return &f
+}
+
 func EventsToCards(cfg *EventsToCardsConfig) *counters.CardsTemplate {
+	borderWidth := 20.0
+
 	settings := counters.Settings{
 		Width:           742,
 		Height:          1200,
-		Margins:         20,
+		Margins:         floatP(20),
 		FontHeight:      60,
 		FontColorS:      "white",
-		BackgroundColor: "gold",
-		BorderWidth:     20,
+		BackgroundColor: stringP("gold"),
+		BorderWidth:     &borderWidth,
 		BorderColorS:    "black",
 		StrokeColorS:    "black",
 		Alignment:       "center",
@@ -31,7 +45,7 @@ func EventsToCards(cfg *EventsToCardsConfig) *counters.CardsTemplate {
 
 	titleSettings := counters.Settings{}
 	mergo.Merge(&titleSettings, settings)
-	titleSettings.StrokeWidth = 7
+	titleSettings.StrokeWidth = floatP(7)
 	titleSettings.AvoidClipping = true
 	titleSettings.Position = 3
 

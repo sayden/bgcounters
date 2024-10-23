@@ -55,7 +55,7 @@ func ReadCSVCounters(filepath string) (*counters.CounterTemplate, error) {
 					continue
 				} else if colIndex == 18 {
 					//background color
-					cnt.BackgroundColor = "#" + cell
+					cnt.BackgroundColor = stringP("#" + cell)
 					break
 				}
 
@@ -65,7 +65,7 @@ func ReadCSVCounters(filepath string) (*counters.CounterTemplate, error) {
 							Position:      colIndex,
 							AvoidClipping: true,
 							FontColorS:    "white",
-							StrokeWidth:   2,
+							StrokeWidth:   floatP(2),
 							StrokeColorS:  "black",
 						},
 						String: cell,
@@ -90,7 +90,7 @@ func ReadCSVCounters(filepath string) (*counters.CounterTemplate, error) {
 	template.Settings.Width = 50
 	template.Settings.Height = 50
 	template.Settings.FontHeight = 16
-	template.Settings.Margins = 2
+	template.Settings.Margins = floatP(2)
 	template.Settings.FontColor = color.White
 	template.Settings.ImageScaling = counters.IMAGE_SCALING_FIT_NONE
 
@@ -127,7 +127,7 @@ func ReadCSVCards(f io.Reader, template *counters.CardsTemplate) (*counters.Card
 		// skip leftmost column (multiplier) by now
 		for i, col := range cols[1:] {
 			if i == 0 && headTitles[1] == "bg_color" {
-				card.Settings.BackgroundColor = col
+				card.Settings.BackgroundColor = stringP(col)
 				continue
 			}
 

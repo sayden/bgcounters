@@ -22,13 +22,34 @@ func TestToNewCounter(t *testing.T) {
 			Extra: &counters.Extra{
 				PublicIcon: &counters.Image{Path: "assets/binoculars.png", Scale: 1.5}},
 			Images: []counters.Image{
-				{Path: "assets/stripe.png", Scale: 0.5, Settings: counters.Settings{YShift: 10, XShift: 10}},
-				{Path: "assets/binoculars.png", Settings: counters.Settings{Position: 1}}},
+				{
+					Path:  "assets/stripe.png",
+					Scale: 0.5,
+					Settings: counters.Settings{
+						YShift: floatP(10),
+						XShift: floatP(10),
+					},
+				},
+				{
+					Path:     "assets/old_paper.png",
+					Settings: counters.Settings{Position: 1},
+				},
+			},
 		}
+
 		expectedCounter := &counters.Counter{
 			Images: []counters.Image{
-				{Path: "assets/binoculars.png", Scale: 1.5}},
+				{
+					Path:  "assets/binoculars.png",
+					Scale: 1.5,
+					Settings: counters.Settings{
+						YShift: floatP(0),
+						XShift: floatP(0),
+					},
+				},
+			},
 		}
+
 		newCounter, err := builder.ToNewCounter(counter)
 		assert.NoError(t, err)
 		assert.Equal(t, expectedCounter, newCounter)

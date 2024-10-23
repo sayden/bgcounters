@@ -30,7 +30,10 @@ func ReadJSONCardsFile(cardsFilepath string) (*counters.CardsTemplate, error) {
 		return nil, errors.Wrap(err, "could not read JSON card data")
 	}
 
-	t.ApplyCardWaterfallSettings()
+	err = t.ApplyCardWaterfallSettings()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not apply card waterfall settings")
+	}
 
 	return &t, nil
 }

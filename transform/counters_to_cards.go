@@ -43,7 +43,7 @@ func (cfg *CountersToCardsConfig) CountersToCards() (*counters.CardsTemplate, er
 			return nil, errors.New("error creating card")
 		}
 
-		for i := 0; i < counter.Multiplier; i++ {
+		for i := 0; i < *counter.Multiplier; i++ {
 			outputCardTemplate.Cards = append(outputCardTemplate.Cards, *card)
 		}
 	}

@@ -17,10 +17,10 @@ type CounterTemplate struct {
 	Rows    int `json:"rows,omitempty" default:"2" jsonschema_description:"Number of rows, required when creating tiled based sheets for printing or TTS"`
 	Columns int `json:"columns,omitempty" default:"2" jsonschema_description:"Number of columns, required when creating tiled based sheets for printing or TTS"`
 
-	Mode         string  `json:"mode"`
-	OutputFolder string  `json:"output_folder" default:"output"`
-	DrawGuides   bool    `json:"draw_guides,omitempty"`
-	Scaling      float64 `json:"scaling,omitempty" default:"1.0"`
+	Mode         string   `json:"mode"`
+	OutputFolder string   `json:"output_folder" default:"output"`
+	DrawGuides   bool     `json:"draw_guides,omitempty"`
+	Scaling      *float64 `json:"scaling,omitempty"`
 
 	// 0-16 Specify an position in the counter to use when writing a different file
 	PositionNumberForFilename int `json:"position_number_for_filename,omitempty"`
@@ -38,15 +38,14 @@ func ParseCounterTemplate(byt []byte) (t *CounterTemplate, err error) {
 	}
 
 	t = &CounterTemplate{}
-	if err = defaults.Set(t); err != nil {
-		return nil, errors.Wrap(err, "could not apply defaults to counter template")
-	}
 
 	if err = json.Unmarshal(byt, &t); err != nil {
 		return nil, err
 	}
 
-	t.Settings.ApplySettingsScaling(t.Scaling)
+	if t.Scaling != nil && *t.Scaling != 1.0 {
+		t.Settings.ApplySettingsScaling(*t.Scaling)
+	}
 
 	t.ApplyCounterWaterfallSettings()
 
@@ -55,13 +54,6 @@ func ParseCounterTemplate(byt []byte) (t *CounterTemplate, err error) {
 	if t.WorkingDirectory != "" {
 		if err = os.Chdir(os.ExpandEnv(t.WorkingDirectory)); err != nil {
 			return nil, err
-		}
-	}
-
-	if t.Scaling != 1.0 {
-		for i := range t.Counters {
-			c := t.Counters[i]
-			ApplyCounterScaling(&c, t.Scaling)
 		}
 	}
 
@@ -78,35 +70,53 @@ func (t *CounterTemplate) EnrichTemplate() error {
 	return nil
 }
 
-// ApplyCounterWaterfallSettings traverses the counters in the template applying the default settings to value that are
-// zero-valued
-func (t *CounterTemplate) ApplyCounterWaterfallSettings() {
-	SetColors(&t.Settings)
+func (t *CounterTemplate) ApplyCounterWaterfallSettings() error {
+	// SetColors(&t.Settings)
 
-	for counterIndex, counter := range t.Counters {
-		Merge(&t.Counters[counterIndex].Settings, t.Settings)
-		if t.Counters[counterIndex].Back != nil {
-			Merge(&t.Counters[counterIndex].Back.Settings, t.Settings)
+	for counterIndex := range t.Counters {
+		err := Mergev2(&t.Counters[counterIndex].Settings, &t.Settings)
+		if err != nil {
+			return err
 		}
+		// if t.Counters[counterIndex].Back != nil {
+		// 	err := Mergev2(&t.Counters[counterIndex].Back.Settings, &t.Settings)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// }
 
-		for imageIndex := range counter.Images {
-			Merge(&t.Counters[counterIndex].Images[imageIndex].Settings, counter.Settings)
-			if t.Counters[counterIndex].Back != nil {
-				Merge(&t.Counters[counterIndex].Back.Images[imageIndex].Settings, t.Settings)
+		for imageIndex := range t.Counters[counterIndex].Images {
+			err := Mergev2(&t.Counters[counterIndex].Images[imageIndex].Settings, &t.Counters[counterIndex].Settings)
+			if err != nil {
+				return err
 			}
+			// if t.Counters[counterIndex].Back != nil {
+			// 	err := Mergev2(&t.Counters[counterIndex].Back.Images[imageIndex].Settings, &t.Settings)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// }
 		}
 
-		for imageIndex := range counter.Texts {
-			Merge(&t.Counters[counterIndex].Texts[imageIndex].Settings, counter.Settings)
-			if t.Counters[counterIndex].Back != nil {
-				Merge(&t.Counters[counterIndex].Back.Texts[imageIndex].Settings, t.Settings)
+		for imageIndex := range t.Counters[counterIndex].Texts {
+			err := Mergev2(&t.Counters[counterIndex].Texts[imageIndex].Settings, &t.Counters[counterIndex].Settings)
+			if err != nil {
+				return err
 			}
+			// if t.Counters[counterIndex].Back != nil {
+			// 	err := Mergev2(&t.Counters[counterIndex].Back.Texts[imageIndex].Settings, &t.Settings)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// }
 		}
 
-		if counter.Multiplier == 0 {
-			counter.Multiplier = 1
+		if t.Counters[counterIndex].Multiplier == nil || *t.Counters[counterIndex].Multiplier == 0 {
+			*t.Counters[counterIndex].Multiplier = 1
 		}
 	}
+
+	return nil
 }
 
 func (ct *CounterTemplate) ParsePrototype() (*CounterTemplate, error) {
@@ -115,7 +125,6 @@ func (ct *CounterTemplate) ParsePrototype() (*CounterTemplate, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "error trying to convert a counter template into another counter template")
 	}
-	newTemplate.Scaling = 1
 
 	byt, err := json.Marshal(newTemplate)
 	if err != nil {

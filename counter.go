@@ -26,6 +26,8 @@ type Counter struct {
 	Back *Counter `json:",omitempty"`
 }
 
+type Counters []Counter
+
 // TODO This Extra contains data from all projects
 type Extra struct {
 	// PublicIcon in a FOW counter is the visible icon for the enemy. Imagine an icon for the back
@@ -132,13 +134,13 @@ func (c *Counter) Canvas(withGuides bool) (*gg.Context, error) {
 	}
 
 	// Draw texts
-	if err = c.Texts.DrawTextsOnCanvas(c.Settings, canvas, c.Width, c.Height); err != nil {
+	if err = c.Texts.DrawTextsOnCanvas(&c.Settings, canvas, c.Width, c.Height); err != nil {
 		return nil, errors.Wrap(err, "error trying to draw text")
 	}
 
 	// Draw guides
 	if withGuides {
-		guides, err := DrawGuides(c.Settings)
+		guides, err := DrawGuides(&c.Settings)
 		if err != nil {
 			return nil, err
 		}
@@ -146,7 +148,7 @@ func (c *Counter) Canvas(withGuides bool) (*gg.Context, error) {
 	}
 
 	// Draw borders
-	if c.BorderWidth > 0 {
+	if *c.BorderWidth > 0 {
 		c.drawBorders(canvas)
 	}
 
@@ -156,7 +158,7 @@ func (c *Counter) Canvas(withGuides bool) (*gg.Context, error) {
 func (a *Counter) drawBorders(canvas *gg.Context) {
 	canvas.Push()
 	canvas.SetColor(a.Settings.BorderColor)
-	canvas.SetLineWidth(a.Settings.BorderWidth)
+	canvas.SetLineWidth(*a.Settings.BorderWidth)
 	canvas.DrawRectangle(0, 0, float64(a.Settings.Width), float64(a.Settings.Height))
 	canvas.Stroke()
 	canvas.Pop()

@@ -3,7 +3,6 @@ package counters
 import (
 	"encoding/json"
 
-	"github.com/creasty/defaults"
 	"github.com/pkg/errors"
 )
 
@@ -39,63 +38,99 @@ type CardsExtra struct {
 	BackImage         string  `json:"back_image,omitempty"`
 }
 
-func ParseCardTemplate(byt []byte) (t *CardsTemplate, err error) {
-	if err = ValidateSchemaBytes[CardsTemplate](byt); err != nil {
+func ParseCardTemplate(byt []byte) (*CardsTemplate, error) {
+	err := ValidateSchemaBytes[CardsTemplate](byt)
+	if err != nil {
 		return nil, errors.Wrap(err, "JSON file is not valid")
 	}
 
-	t = &CardsTemplate{}
-	if err = defaults.Set(t); err != nil {
-		return nil, errors.Wrap(err, "could not apply defaults to counter template")
-	}
-
+	t := CardsTemplate{}
 	if err = json.Unmarshal(byt, &t); err != nil {
 		return nil, err
 	}
 
-	t.Settings.ApplySettingsScaling(t.Scaling)
-
-	t.ApplyCardWaterfallSettings()
-
-	if t.Scaling != 1.0 {
-		ApplyCardScaling(t)
+	if t.Scaling > 0 {
+		t.Settings.ApplySettingsScaling(t.Scaling)
 	}
 
-	return
+	err = t.ApplyCardWaterfallSettings()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not apply card waterfall settings")
+	}
+
+	return &t, nil
 }
 
 // ApplyCardWaterfallSettings traverses the cards in the template applying the default settings to
 // value that are zero-valued
-func (t *CardsTemplate) ApplyCardWaterfallSettings() {
-	SetColors(&t.Settings)
+func (t *CardsTemplate) ApplyCardWaterfallSettings() error {
+	// SetColors(&t.Settings)
 
-	for cardsIndex := range t.Cards {
-		Merge(&t.Cards[cardsIndex].Settings, t.Settings)
+	for cardIdx := range t.Cards {
+		card := &t.Cards[cardIdx]
+		if t.Scaling > 0 {
+			card.ApplySettingsScaling(t.Scaling)
+		}
+		err := Mergev2(&card.Settings, &t.Settings)
+		if err != nil {
+			return err
+		}
 
-		for counterIndex := range t.Cards[cardsIndex].Areas {
-			Merge(&t.Cards[cardsIndex].Areas[counterIndex].Settings, t.Cards[cardsIndex].Settings)
-
-			for imageIndex := range t.Cards[cardsIndex].Areas[counterIndex].Images {
-				Merge(
-					&t.Cards[cardsIndex].Areas[counterIndex].Images[imageIndex].Settings,
-					t.Cards[cardsIndex].Areas[counterIndex].Settings,
-				)
+		for areaIdx := range card.Areas {
+			area := &card.Areas[areaIdx]
+			if t.Scaling > 0 {
+				area.ApplySettingsScaling(t.Scaling)
+			}
+			err := Mergev2(&area.Settings, &card.Settings)
+			if err != nil {
+				return err
 			}
 
-			for textIndex := range t.Cards[cardsIndex].Areas[counterIndex].Texts {
-				Merge(
-					&t.Cards[cardsIndex].Areas[counterIndex].Texts[textIndex].Settings,
-					t.Cards[cardsIndex].Areas[counterIndex].Settings,
-				)
+			for imageIdx := range area.Images {
+				image := &area.Images[imageIdx]
+				if t.Scaling > 0 {
+					image.ApplySettingsScaling(t.Scaling)
+				}
+				err := Mergev2(&image.Settings, &area.Settings)
+				if err != nil {
+					return err
+				}
+			}
+
+			for textIdx := range area.Texts {
+				text := &area.Texts[textIdx]
+				if t.Scaling > 0 {
+					text.ApplySettingsScaling(t.Scaling)
+				}
+				err := Mergev2(&text.Settings, &area.Settings)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
-		for imageIndex := range t.Cards[cardsIndex].Images {
-			Merge(&t.Cards[cardsIndex].Images[imageIndex].Settings, t.Cards[cardsIndex].Settings)
+		for imageIdx := range card.Images {
+			image := &card.Images[imageIdx]
+			if t.Scaling > 0 {
+				image.ApplySettingsScaling(t.Scaling)
+			}
+			err := Mergev2(&image.Settings, &card.Settings)
+			if err != nil {
+				return err
+			}
 		}
 
-		for textIndex := range t.Cards[cardsIndex].Texts {
-			Merge(&t.Cards[cardsIndex].Texts[textIndex].Settings, t.Cards[cardsIndex].Settings)
+		for textIdx := range card.Texts {
+			text := &card.Texts[textIdx]
+			if t.Scaling > 0 {
+				text.ApplySettingsScaling(t.Scaling)
+			}
+			err := Mergev2(&text.Settings, &card.Settings)
+			if err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
 }

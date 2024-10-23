@@ -6,7 +6,7 @@ import (
 	"github.com/fogleman/gg"
 )
 
-func DrawGuides(s Settings) (*image.Image, error) {
+func DrawGuides(s *Settings) (*image.Image, error) {
 	var p Positioner
 	width := float64(s.Width)
 	height := float64(s.Height)

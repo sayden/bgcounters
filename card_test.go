@@ -2,7 +2,6 @@ package counters
 
 import (
 	"image/color"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,30 +27,14 @@ func TestGetCanvas(t *testing.T) {
 	assert.NotNil(t, canvas)
 }
 
-func TestToImage(t *testing.T) {
-	byt, err := os.ReadFile("./testdata/card_template.json")
-	if !assert.NoError(t, err) {
-		t.Fatal(err)
-	}
-
-	template, err := ParseCardTemplate(byt)
-	if !assert.NoError(t, err) {
-		t.Fatal(err)
-	}
-
-	f, _ := os.Create("/tmp/test.png")
-	defer f.Close()
-	err = template.Cards[0].EncodeImage(f, template)
-	assert.NoError(t, err)
-}
-
 func TestApplyCardScaling(t *testing.T) {
 	template := &CardsTemplate{
 		Scaling: 1.5,
 		Settings: Settings{
 			Width:       800,
 			Height:      600,
-			StrokeWidth: 2,
+			StrokeWidth: floatP(2),
+			FontPath:    "assets/freesans.ttf",
 		},
 		Cards: []Card{
 			{
@@ -66,24 +49,30 @@ func TestApplyCardScaling(t *testing.T) {
 					{Settings: Settings{Width: 200, Height: 100}},
 				},
 				Texts: []Text{
-					{Settings: Settings{Width: 300, Height: 150, StrokeWidth: 2}},
+					{Settings: Settings{Width: 300, Height: 150, StrokeWidth: floatP(2)}},
 				},
 			},
 		},
 	}
 
-	ApplyCardScaling(template)
+	// ApplyCardScaling(template)
+	template.Settings.ApplySettingsScaling(template.Scaling)
+
+	err := template.ApplyCardWaterfallSettings()
+	if !assert.NoError(t, err) {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, 1200, template.Settings.Width)
 	assert.Equal(t, 900, template.Settings.Height)
-	assert.Equal(t, 400, template.Cards[0].Settings.Width)
-	assert.Equal(t, 300, template.Cards[0].Settings.Height)
+	assert.Equal(t, 600, template.Cards[0].Settings.Width)
+	assert.Equal(t, 450, template.Cards[0].Settings.Height)
 	assert.Equal(t, 150, template.Cards[0].Areas[0].Width)
 	assert.Equal(t, 75, template.Cards[0].Areas[0].Height)
-	assert.Equal(t, float64(3), template.Settings.StrokeWidth)
+	assert.Equal(t, float64(3), *template.Settings.StrokeWidth)
 	assert.Equal(t, 300, template.Cards[0].Images[0].Width)
 	assert.Equal(t, 150, template.Cards[0].Images[0].Height)
 	assert.Equal(t, 450, template.Cards[0].Texts[0].Settings.Width)
 	assert.Equal(t, 225, template.Cards[0].Texts[0].Settings.Height)
-	assert.Equal(t, float64(3), template.Cards[0].Texts[0].Settings.StrokeWidth)
+	assert.Equal(t, float64(3), *template.Cards[0].Texts[0].Settings.StrokeWidth)
 }

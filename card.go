@@ -1,12 +1,10 @@
 package counters
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"io"
 	"math"
-	"os"
 
 	"github.com/fogleman/gg"
 	"github.com/pkg/errors"
@@ -29,7 +27,7 @@ func (c *Card) Image(template *CardsTemplate) (image.Image, error) {
 }
 
 func (c *Card) ToCanvas(template *CardsTemplate) (*gg.Context, error) {
-	Merge(&c.Settings, template.Settings)
+	Mergev2(&c.Settings, &template.Settings)
 	SetColors(&c.Settings)
 
 	cardCanvas, err := GetCanvas(&c.Settings, template.Width, template.Height, template)
@@ -51,7 +49,7 @@ func (c *Card) ToCanvas(template *CardsTemplate) (*gg.Context, error) {
 
 	areasHeights := c.GetAreasHeights()
 	// Process each area on the text
-	y := template.Margins
+	y := *template.Margins
 
 	for areaIndex, area := range c.Areas {
 		isLastAreaOfCard := areaIndex != numberOfAreas
@@ -59,25 +57,20 @@ func (c *Card) ToCanvas(template *CardsTemplate) (*gg.Context, error) {
 
 		// area.Width = (template.Width) - int(template.Margins*2)
 		// areaCanvas, err := c.processAreav2(template, &area, c.Areas[areaIndex].Height, isLastAreaOfCard)
-		areaCanvas, err := c.processAreav2(&area, template, int(math.Floor(areasHeights[areaIndex])), isLastAreaOfCard)
+		areaCanvas, err := c.ProcessAreav2(&area, template, int(math.Floor(areasHeights[areaIndex])), isLastAreaOfCard)
 		// areaCanvas, err := area.Canvas(false)
 		if err != nil {
 			return nil, err
 		}
 
-		// TODO: Remove this
-		f, _ := os.Create(fmt.Sprintf("/tmp/area_%d.png", areaIndex))
-		defer f.Close()
-		areaCanvas.EncodePNG(f)
-
-		x := template.Margins
+		x := *template.Margins
 		if err = c.drawOnCard(template, cardCanvas, areaCanvas, x, y); err != nil {
 			return nil, err
 		}
 		y += areasHeights[areaIndex]
 	}
 
-	if err = c.Texts.DrawTextsOnCanvas(c.Settings, cardCanvas, c.Width, c.Height); err != nil {
+	if err = c.Texts.DrawTextsOnCanvas(&c.Settings, cardCanvas, c.Width, c.Height); err != nil {
 		return nil, err
 	}
 
@@ -99,10 +92,10 @@ func (c *Card) EncodeImage(w io.Writer, t *CardsTemplate) error {
 	return nil
 }
 
-func (c *Card) processAreav2(area *Counter, t *CardsTemplate, calculatedAreaHeight int, isLastArea bool) (*gg.Context, error) {
-	Merge(&area.Settings, c.Settings)
+func (c *Card) ProcessAreav2(area *Counter, t *CardsTemplate, calculatedAreaHeight int, isLastArea bool) (*gg.Context, error) {
+	Mergev2(&area.Settings, &c.Settings)
 
-	area.Width = (t.Width) - int(t.Margins*2)
+	area.Width = (t.Width) - int(*t.Margins*2)
 	area.Height = calculatedAreaHeight
 
 	areaCanvas, err := area.Canvas(false)
@@ -111,16 +104,16 @@ func (c *Card) processAreav2(area *Counter, t *CardsTemplate, calculatedAreaHeig
 	}
 
 	if !isLastArea && area.Frame {
-		c.drawFrame(areaCanvas, c.BorderWidth, c.BorderColor)
+		c.drawFrame(areaCanvas, *c.BorderWidth, c.BorderColor)
 	}
 
 	return areaCanvas, nil
 }
 
 func (c *Card) processArea(t *CardsTemplate, area *Counter, calculatedAreaHeight int, isLastArea bool) (*gg.Context, error) {
-	Merge(&area.Settings, c.Settings)
+	Mergev2(&area.Settings, &c.Settings)
 
-	c.Width = (t.Width) - int(t.Margins*2)
+	c.Width = (t.Width) - int(*t.Margins*2)
 	c.Height = calculatedAreaHeight
 
 	areaCanvas, err := GetCanvas(&c.Settings, c.Width, c.Height, t)
@@ -132,12 +125,12 @@ func (c *Card) processArea(t *CardsTemplate, area *Counter, calculatedAreaHeight
 		return nil, errors.Wrap(err, "error trying to process image")
 	}
 
-	if err = c.Texts.DrawTextsOnCanvas(c.Settings, areaCanvas, c.Width, c.Height); err != nil {
+	if err = c.Texts.DrawTextsOnCanvas(&c.Settings, areaCanvas, c.Width, c.Height); err != nil {
 		return nil, errors.Wrap(err, "error trying to draw text")
 	}
 
 	if !isLastArea && area.Frame {
-		c.drawFrame(areaCanvas, c.BorderWidth, c.BorderColor)
+		c.drawFrame(areaCanvas, *c.BorderWidth, c.BorderColor)
 	}
 
 	return areaCanvas, nil
@@ -147,7 +140,7 @@ func (a *Card) drawOnCard(t *CardsTemplate, cardCanvas, areaCanvas *gg.Context, 
 	cardCanvas.DrawImage(areaCanvas.Image(), int(x), int(y))
 
 	if t.DrawGuides {
-		guidesImage, err := DrawGuides(a.Settings)
+		guidesImage, err := DrawGuides(&a.Settings)
 		if err != nil {
 			return errors.Wrap(err, "error tyring to draw guides")
 		}
@@ -170,12 +163,12 @@ func (a *Card) drawFrame(areaCanvas *gg.Context, w float64, col color.Color) {
 
 func (c *Card) maybeDrawBorders(cardCanvas *gg.Context) {
 	borderColorIsSet := c.Settings.BorderColor != nil
-	borderWidthIsSet := c.Settings.BorderWidth != 0
+	borderWidthIsSet := *c.Settings.BorderWidth != 0
 
 	if borderColorIsSet && borderWidthIsSet {
 		cardCanvas.Push()
 		cardCanvas.SetColor(c.Settings.BorderColor)
-		cardCanvas.SetLineWidth(c.Settings.BorderWidth)
+		cardCanvas.SetLineWidth(*c.Settings.BorderWidth)
 		cardCanvas.DrawRectangle(0, 0, float64(c.Settings.Width), float64(c.Settings.Height))
 		cardCanvas.Stroke()
 		cardCanvas.Pop()
@@ -184,7 +177,7 @@ func (c *Card) maybeDrawBorders(cardCanvas *gg.Context) {
 
 func (c *Card) GetAreasHeights() (hs []float64) {
 	hs = make([]float64, len(c.Areas))
-	availableH := float64(c.Height) - (c.Margins * 2)
+	availableH := float64(c.Height) - (*c.Margins * 2)
 	hasCustomHeight := make([]bool, len(c.Areas))
 	totalNonCustomAreas := 0
 	for i, area := range c.Areas {
@@ -237,20 +230,19 @@ func GetCanvas(settings *Settings, width, height int, t *CardsTemplate) (*gg.Con
 }
 
 func ApplyCardScaling(t *CardsTemplate) {
-	for i := range t.Cards {
-		c := t.Cards[i]
-		c.Settings.ApplySettingsScaling(t.Scaling)
+	for _, card := range t.Cards {
+		card.Settings.ApplySettingsScaling(t.Scaling)
 
-		for j := range c.Areas {
-			ApplyCounterScaling(&c.Areas[j], t.Scaling)
+		for _, area := range card.Areas {
+			ApplyCounterScaling(&area, t.Scaling)
 		}
 
-		for j := range c.Images {
-			applyImageScaling(&c.Images[j], t.Scaling)
+		for _, image := range card.Images {
+			applyImageScaling(&image, t.Scaling)
 		}
 
-		for j := range c.Texts {
-			c.Texts[j].Settings.ApplySettingsScaling(t.Scaling)
+		for _, text := range card.Texts {
+			text.Settings.ApplySettingsScaling(t.Scaling)
 		}
 	}
 
