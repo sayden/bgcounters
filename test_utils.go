@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testImageContent(t *testing.T, expectedImagePath string, expectedImageLength int, canvas *gg.Context) {
+func TestImageContent(t *testing.T, expectedImagePath string, expectedImageLength int, canvas *gg.Context) {
 	byt := new(bytes.Buffer)
 	err := canvas.EncodePNG(byt)
 	assert.NoError(t, err)
@@ -33,4 +33,8 @@ func testImageContent(t *testing.T, expectedImagePath string, expectedImageLengt
 		}
 	}
 
+}
+
+func stringP(s string) *string {
+	return &s
 }

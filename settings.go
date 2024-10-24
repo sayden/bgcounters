@@ -166,7 +166,7 @@ func Mergev2(d *Settings, s *Settings) error {
 	}
 
 	if d.FontPath == "" && s.FontPath == "" {
-		return errors.New("no valid font path was found")
+		// can be empty because it can be an image
 	} else {
 		d.FontPath = s.FontPath
 	}
@@ -185,6 +185,7 @@ func Mergev2(d *Settings, s *Settings) error {
 				}
 			} else {
 				d.FontColor = s.FontColor
+				d.FontColorS = s.FontColorS
 			}
 		} else {
 			d.FontColor = ColorFromStringOrDefault(d.FontColorS, color.Black)

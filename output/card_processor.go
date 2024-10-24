@@ -43,7 +43,7 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 	}
 	// counters.SetColors(&card.Settings)
 
-	c.cardCanvas, err = counters.GetCanvas(&card.Settings, c.template.Width, c.template.Height, c.template)
+	c.cardCanvas, err = c.template.Canvas(&card.Settings, c.template.Width, c.template.Height)
 	if err != nil {
 		return err
 	}
@@ -64,10 +64,11 @@ func (c *cardProcessor) processCard(sheet *gg.Context, card *counters.Card, colu
 	// Process each area on the text
 	y := c.template.Margins
 
-	canvas, err := card.ToCanvas(c.template)
+	cardCanvas, err := card.ToCanvas(c.template)
 	if err != nil {
 		return err
 	}
+	drawOnCard(c.template, c.cardCanvas, cardCanvas, 0, 0)
 
 	for areaIndex, areaCounter := range card.Areas {
 		isLastAreaOfCard := areaIndex != numberOfAreas

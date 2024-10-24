@@ -79,7 +79,7 @@ func TestTextDraw(t *testing.T) {
 		err = testText.Draw(testCanvas, 14, &testText.Settings)
 		assert.NoError(t, err)
 
-		testImageContent(t, "testdata/text_draw_01.png", 21089, testCanvas)
+		TestImageContent(t, "testdata/text_draw_01.png", 21089, testCanvas)
 	})
 }
 
@@ -189,7 +189,7 @@ func TestDrawTextsOnCanvas(t *testing.T) {
 
 		err := texts.DrawTextsOnCanvas(&initialSettings, testCanvas, sideSize, sideSize)
 		if assert.NoError(t, err) {
-			testImageContent(t, "./testdata/text_draw_01.png", 21089, testCanvas)
+			TestImageContent(t, "./testdata/text_draw_01.png", 21089, testCanvas)
 		}
 	})
 }

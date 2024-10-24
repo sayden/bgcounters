@@ -45,7 +45,7 @@ func TestGuides(t *testing.T) {
 
 		canvas, err := parsedTemplate.Counters[0].Canvas(true)
 		if assert.NoError(t, err) {
-			testImageContent(t, "testdata/guides_01.png", 1709, canvas)
+			TestImageContent(t, "testdata/guides_01.png", 1709, canvas)
 		}
 	}
 

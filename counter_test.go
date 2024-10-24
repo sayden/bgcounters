@@ -1,6 +1,8 @@
 package counters
 
 import (
+	"bytes"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -65,7 +67,7 @@ func TestGetCounterFilename(t *testing.T) {
 					},
 				},
 				Extra: &Extra{
-					TitlePosition: newInt(1),
+					TitlePosition: intP(1),
 				},
 			},
 			position:       0,
@@ -102,21 +104,40 @@ func TestGetCounterFilename(t *testing.T) {
 	}
 }
 
-func TestApplyCounterScaling(t *testing.T) {
+func TestCounterEncode(t *testing.T) {
 	counter := Counter{
 		Settings: Settings{
-			Width: 300,
+			Width:           100,
+			Height:          100,
+			FontPath:        "assets/freesans.ttf",
+			FontColorS:      "black",
+			BackgroundColor: stringP("black"),
+			StrokeWidth:     floatP(2),
+			StrokeColorS:    "white",
+			FontHeight:      15,
+			BorderWidth:     floatP(2),
+			BorderColorS:    "red",
 		},
-		Images: []Image{{Scale: 0.5}},
-		Texts:  []Text{{Settings: Settings{FontHeight: 10}}},
+		Texts: []Text{
+			{String: "Area text"},
+		},
 	}
-	ApplyCounterScaling(&counter, 2)
 
-	assert.Equal(t, 600, counter.Settings.Width)
-	assert.Equal(t, float64(1), counter.Images[0].Scale)
-	assert.Equal(t, 20.0, counter.Texts[0].Settings.FontHeight)
-}
+	byt := make([]byte, 0, 10000)
+	buf := bytes.NewBuffer(byt)
 
-func newInt(i int) *int {
-	return &i
+	err := counter.EncodeCounter(buf, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	byt = buf.Bytes()
+
+	expectedByt, err := os.ReadFile("testdata/counter_01.png")
+	if err != nil {
+		t.FailNow()
+	}
+
+	if assert.Equal(t, len(expectedByt), len(byt)) {
+		assert.Equal(t, expectedByt, byt)
+	}
 }

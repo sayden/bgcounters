@@ -118,6 +118,7 @@ func (c *Counter) GetCounterFilename(position int, suffix string, filenumber int
 }
 
 func (c *Counter) Canvas(withGuides bool) (*gg.Context, error) {
+	SetColors(&c.Settings)
 	canvas, err := c.canvas()
 	if err != nil {
 		return nil, err
@@ -148,11 +149,21 @@ func (c *Counter) Canvas(withGuides bool) (*gg.Context, error) {
 	}
 
 	// Draw borders
-	if *c.BorderWidth > 0 {
+	if c.BorderWidth != nil && *c.BorderWidth > 0 {
 		c.drawBorders(canvas)
 	}
 
 	return canvas, nil
+}
+
+func (c *Counter) EncodeCounter(w io.Writer, drawGuides bool) error {
+
+	counterCanvas, err := c.Canvas(drawGuides)
+	if err != nil {
+		return err
+	}
+
+	return counterCanvas.EncodePNG(w)
 }
 
 func (a *Counter) drawBorders(canvas *gg.Context) {
@@ -182,25 +193,4 @@ func (c *Counter) canvas() (*gg.Context, error) {
 	}
 
 	return dc, nil
-}
-
-func ApplyCounterScaling(c *Counter, scaling float64) {
-	for i := range c.Images {
-		applyImageScaling(&c.Images[i], scaling)
-	}
-
-	for i := range c.Texts {
-		c.Texts[i].Settings.ApplySettingsScaling(scaling)
-	}
-
-	c.Settings.ApplySettingsScaling(scaling)
-}
-
-func (c *Counter) EncodeCounter(w io.Writer, template *CounterTemplate) error {
-	counterCanvas, err := c.Canvas(template.DrawGuides)
-	if err != nil {
-		return err
-	}
-
-	return counterCanvas.EncodePNG(w)
 }

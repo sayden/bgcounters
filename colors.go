@@ -31,6 +31,8 @@ func ColorFromStringOrDefault(s string, d color.Color) color.Color {
 func SetColors(s *Settings) {
 	s.BorderColor = ColorFromStringOrDefault(s.BorderColorS, color.Transparent)
 	s.FontColor = ColorFromStringOrDefault(s.FontColorS, color.Transparent)
-	s.BgColor = ColorFromStringOrDefault(*s.BackgroundColor, color.Transparent)
+	if s.BackgroundColor != nil {
+		s.BgColor = ColorFromStringOrDefault(*s.BackgroundColor, color.Transparent)
+	}
 	s.StrokeColor = ColorFromStringOrDefault(s.StrokeColorS, color.Transparent)
 }

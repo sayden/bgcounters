@@ -49,8 +49,8 @@ func CountersToPNG(template *counters.CounterTemplate) error {
 	if template.Mode == counters.TEMPLATE_MODE_TILES {
 		// Create canvas
 		canvas = gg.NewContext(template.Columns*template.Width, template.Rows*template.Height)
-		if err := canvas.LoadFontFace(counters.DEFAULT_FONT_PATH, template.FontHeight); err != nil {
-			log.WithField("font_path", counters.DEFAULT_FONT_PATH).Error(err)
+		if err := canvas.LoadFontFace(template.FontPath, template.FontHeight); err != nil {
+			log.WithField("font_path", template.FontPath).Error(err)
 			return errors.Wrap(err, "could not load font")
 		}
 	}

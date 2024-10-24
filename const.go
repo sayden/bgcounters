@@ -42,8 +42,6 @@ const (
 	STRIPE              = "assets/stripe.png"
 	VassalInputXmlFile  = "template.xml"
 	VassalOutputXmlFile = BASE_FOLDER + "/buildFile.xml"
-
-	DEFAULT_FONT_PATH = "assets/font-bebas.ttf"
 )
 
 type FileContent int

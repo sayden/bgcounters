@@ -119,9 +119,9 @@ func (t *CounterTemplate) ApplyCounterWaterfallSettings() error {
 	return nil
 }
 
-func (ct *CounterTemplate) ParsePrototype() (*CounterTemplate, error) {
+func (t *CounterTemplate) ParsePrototype() (*CounterTemplate, error) {
 	// JSON counters to Counters
-	newTemplate, err := ct.ExpandPrototypeCounterTemplate()
+	newTemplate, err := t.ExpandPrototypeCounterTemplate()
 	if err != nil {
 		return nil, errors.Wrap(err, "error trying to convert a counter template into another counter template")
 	}
@@ -139,35 +139,35 @@ func (ct *CounterTemplate) ParsePrototype() (*CounterTemplate, error) {
 	return newTemplate, nil
 }
 
-func (ct *CounterTemplate) ExpandPrototypeCounterTemplate() (t *CounterTemplate, err error) {
+func (t *CounterTemplate) ExpandPrototypeCounterTemplate() (*CounterTemplate, error) {
 	// JSON counters to Counters, check Prototype in CounterTemplate
-	if ct.Prototypes != nil {
-		if ct.Counters == nil {
-			ct.Counters = make([]Counter, 0)
+	if t.Prototypes != nil {
+		if t.Counters == nil {
+			t.Counters = make([]Counter, 0)
 		}
 
 		// sort prototypes by name, to ensure consistent output filenames this is a small
 		// inconvenience, because iterating over maps in Go returns keys in random order
-		names := make([]string, 0, len(ct.Prototypes))
-		for name := range ct.Prototypes {
+		names := make([]string, 0, len(t.Prototypes))
+		for name := range t.Prototypes {
 			names = append(names, name)
 		}
 		sort.Strings(names)
 
 		for _, prototypeName := range names {
-			prototype := ct.Prototypes[prototypeName]
+			prototype := t.Prototypes[prototypeName]
 
 			cts, err := prototype.ToCounters()
 			if err != nil {
 				return nil, err
 			}
 
-			ct.Counters = append(ct.Counters, cts...)
+			t.Counters = append(t.Counters, cts...)
 		}
 
-		ct.Prototypes = nil
-		return ct, nil
+		t.Prototypes = nil
+		return t, nil
 	}
 
-	return ct, nil
+	return t, nil
 }

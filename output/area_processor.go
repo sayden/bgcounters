@@ -37,7 +37,7 @@ func (a *areaProcessor) processArea(card *counters.Card, template *counters.Card
 	a.Width = (template.Width) - int(*template.Margins*2.0)
 	a.Height = a.calculatedAreaHeight
 
-	if a.areaCanvas, err = counters.GetCanvas(&a.Settings, a.Width, a.Height, template); err != nil {
+	if a.areaCanvas, err = template.Canvas(&a.Settings, a.Width, a.Height); err != nil {
 		return errors.Wrap(err, "error trying to create a canvas")
 	}
 

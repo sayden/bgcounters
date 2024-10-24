@@ -3,6 +3,7 @@ package counters
 import (
 	"encoding/json"
 
+	"github.com/fogleman/gg"
 	"github.com/pkg/errors"
 )
 
@@ -64,7 +65,7 @@ func ParseCardTemplate(byt []byte) (*CardsTemplate, error) {
 // ApplyCardWaterfallSettings traverses the cards in the template applying the default settings to
 // value that are zero-valued
 func (t *CardsTemplate) ApplyCardWaterfallSettings() error {
-	// SetColors(&t.Settings)
+	SetColors(&t.Settings)
 
 	for cardIdx := range t.Cards {
 		card := &t.Cards[cardIdx]
@@ -133,4 +134,34 @@ func (t *CardsTemplate) ApplyCardWaterfallSettings() error {
 	}
 
 	return nil
+}
+
+func (t *CardsTemplate) SheetCanvas() (*gg.Context, error) {
+	width := t.Columns * t.Width
+	height := t.Rows * t.Height
+	return t.Canvas(&t.Settings, width, height)
+}
+
+// Canvas returns a Canvas with attributes (like background color or size)
+// taken from `settings`
+func (t *CardsTemplate) Canvas(settings *Settings, width, height int) (*gg.Context, error) {
+	dc := gg.NewContext(width, height)
+	err := dc.LoadFontFace(settings.FontPath, settings.FontHeight)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not load font face")
+	}
+
+	if settings.BgColor != nil {
+		dc.Push()
+		dc.SetColor(settings.BgColor)
+		dc.DrawRectangle(0, 0, float64(width), float64(height))
+		dc.Fill()
+		dc.Pop()
+	}
+
+	if settings.FontColorS != "" {
+		ColorFromStringOrDefault(settings.FontColorS, t.BgColor)
+	}
+
+	return dc, nil
 }

@@ -1,13 +1,13 @@
 package counters
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"math"
 
 	"github.com/disintegration/imaging"
 	"github.com/fogleman/gg"
-	"github.com/pkg/errors"
 	"github.com/thehivecorporation/log"
 	"golang.org/x/exp/slices"
 )
@@ -17,7 +17,7 @@ type Image struct {
 	Positioner
 
 	Path          string  `json:"path,omitempty"`
-	Scale         float64 `json:"scale,omitempty" default:"1"`
+	Scale         float64 `json:"scale,omitempty"`
 	AvoidCropping bool    `json:"avoid_cropping,omitempty"`
 }
 
@@ -54,7 +54,8 @@ func (i *Image) Draw(dc *gg.Context, pos int) error {
 	case IMAGE_SCALING_FIT_HEIGHT:
 		img = imaging.Resize(img, int(math.Ceil(float64(dc.Height())*i.Scale)), 0, imaging.Box)
 	case IMAGE_SCALING_FIT_NONE:
-		// Do nothing, image untouched from original
+		// Just apply scaling to image dimensions
+		img = imaging.Resize(img, int(math.Ceil(float64(img.Bounds().Dx())*i.Scale)), 0, imaging.Box)
 	default:
 		// Do nothing, image untouched from original
 	}
@@ -84,13 +85,13 @@ func (images Images) DrawImagesOnCanvas(s *Settings, areaCanvas *gg.Context, w, 
 	})
 
 	for _, image := range images {
-		Merge(&image.Settings, *s)
+		Mergev2(&image.Settings, s)
 
 		image.Width = w
 		image.Height = h
 
 		if err := image.Draw(areaCanvas, image.Position); err != nil {
-			return errors.Wrap(err, "could not draw image")
+			return fmt.Errorf("could not draw image using path '%s': %w", image.Path, err)
 		}
 	}
 
@@ -114,10 +115,4 @@ func getShadowImageSize(img image.Image, shadowDistance int, sigma int) (int, in
 	h := rect.Dy() + sigma*sigma
 
 	return w, h
-}
-
-func applyImageScaling(i *Image, scaling float64) {
-	i.Scale *= scaling
-
-	i.Settings.ApplySettingsScaling(scaling)
 }
